@@ -1,8 +1,19 @@
-const Sequelize = require('sequelize');
+/*const Sequelize = require('sequelize');
 var sequelize = new Sequelize('SenecaDB', 'SenecaDB_owner', 'o4qptfdThlH6', {
     host: 'ep-nameless-leaf-a58tw4n6-pooler.us-east-2.aws.neon.tech',
     dialect: 'postgres',
     port: 5432,
+    dialectOptions: {
+        ssl: { rejectUnauthorized: false }
+    },
+    query: { raw: true },
+    logging: console.log
+});*/
+const Sequelize = require('sequelize');
+var sequelize = new Sequelize(process.env.PGDATABASE, process.env.PGUSER, process.env.PGPASSWORD, {
+    host: process.env.PGHOST,
+    dialect: 'postgres',
+    port: process.env.PGPORT,
     dialectOptions: {
         ssl: { rejectUnauthorized: false }
     },
