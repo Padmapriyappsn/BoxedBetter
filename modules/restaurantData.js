@@ -320,8 +320,8 @@ function addstudent(studentData) {
 }
 
 
-// Function to add an order
-function addOrder(orderData) {
+// Function to place an order
+function placeOrder(orderData) {
     return new Promise((resolve, reject) => {
         Order.create(orderData)
             .then(() => resolve())
@@ -461,12 +461,13 @@ module.exports = {
     updateRestaurant, 
     deleteRestaurantById, 
     deleteStudentById,
-    addOrder,
     getOrdersByStudent, 
     getOrdersByRestaurant, 
     addFoodItem,
     updateFoodItem, 
     deleteFoodItem,
     getFoodByRestaurantId,
-    postFoodDiscount
+    postFoodDiscount,
+    placeOrder,
+    trackOrder
 };

@@ -364,28 +364,77 @@ app.post('/restaurant/delete-food/:foodId', async (req, res) => {
     }
 });
 
-// Route to render place order page
-app.get('/placeorder', (req, res) => {
-    if (req.session.user && req.session.user.role === 'student') {
-        restaurantData.getFoodItems().then((foodItems) => {
-            res.render('placeorder', { isStudent: true, foodItems });
-        });
-    } else {
-        res.render('placeorder', { isStudent: false });
+// Route to handle placing an order
+router.post('/student/place-order', async (req, res) => {
+    try {
+        // Extract order details from the request body
+        const { foodId, quantity } = req.body; // or whatever your form sends.
+        const studentId = req.session.studentId; // Get student ID from session or authentication
+
+        // Validate the input data
+        if (!foodId || !quantity || !studentId) {
+            return res.status(400).send('Missing order details.');
+        }
+
+        // Logic to create an order in your database
+        const order = await placeOrder(studentId, foodId, quantity); // Replace with your function
+
+        // Send a success response
+        res.status(201).json({ message: 'Order placed successfully', order }); // 201 Created
+
+    } catch (error) {
+        console.error('Error placing order:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+// Route to handle viewing an order (if needed, typically GET is used for viewing)
+// If you want to use POST, you might be sending data to filter orders.
+router.post('/student/view-order', async (req, res) => {
+    try {
+        const { orderId } = req.body; // Example: orderId from the request body
+        const studentId = req.session.studentId;
+
+        // Validation
+        if (!orderId || !studentId) {
+            return res.status(400).send('Missing order ID.');
+        }
+
+        // Logic to fetch order details from the database
+        const orderDetails = await getOrdersByStudent(studentId); // Replace with your function
+
+        if (!orderDetails) {
+            return res.status(404).send('Order not found.');
+        }
+
+        res.json(orderDetails);
+    } catch (error) {
+        console.error('Error viewing order:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
-// Route to handle placing an order
-app.post('/order', async (req, res) => {
-    const { foodItem } = req.body;
-    const order = await restaurantData.placeOrder(req.session.user.id, foodItem);
-    res.redirect('/trackorderstatus');
-});
+// Route to track an order (if you want to use POST, you might send data to filter tracking)
+router.post('/track-order', async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        const studentId = req.session.studentId;
 
-// Route to render track order status page
-app.get('/trackorderstatus', async (req, res) => {
-    const orders = await restaurantData.getOrders(req.session.user.id);
-    res.render('trackorderstatus', { orders });
+        if (!orderId || !studentId) {
+            return res.status(400).send('Missing order ID.');
+        }
+
+        // Logic to fetch order tracking information
+        const trackingInfo = await fetchOrderTracking(orderId, studentId); // Replace with your function
+
+        if (!trackingInfo) {
+            return res.status(404).send('Tracking information not found.');
+        }
+
+        res.json(trackingInfo);
+    } catch (error) {
+        console.error('Error tracking order:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 // Route to render pickup orders page (for restaurant staff)
