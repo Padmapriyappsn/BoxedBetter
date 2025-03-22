@@ -1,0 +1,86 @@
+<div class="text-container">
+    <div class="row">
+        <main class="col-md-12">
+            <!-- Title centered at the top -->
+            <h1 class="text-center" style="font-size: 3.5em; color: #4f9363; margin-top: 100px; text-shadow: -1px -1px 0 #f1eae9;">
+                Student Information
+            </h1>
+
+            <!-- Gap below title -->
+            <div style="margin-bottom: 40px;"></div>
+
+            <form action="/students/add" method="POST">
+                <!-- Personal Information -->
+                <fieldset>
+                    <legend>Please enter your details</legend>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="firstName">First Name:</label>
+                                <input class="form-control" id="firstName" name="firstName" type="text" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lastName">Last Name:</label>
+                                <input class="form-control" id="lastName" name="lastName" type="text" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressStreet">Address (Street):</label>
+                                <input class="form-control" id="addressStreet" name="addressStreet" type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressCity">Address (City):</label>
+                                <input class="form-control" id="addressCity" name="addressCity" type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressProvince">Address (Province):</label>
+                                <input class="form-control" id="addressProvince" name="addressProvince" type="text">
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <hr />
+                <div class="row">
+                        <div class="col-md-6">
+                           <div class="form-group">
+                               <label for="email">Email:</label>
+                               <input class="form-control" id="email" name="email" type="email" required>
+                           </div>
+                       </div>
+                   </div>
+                <!-- Mobile Number Field -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="mobilenumber">Mobile Number:</label>
+                            <input class="form-control" id="smsContact" name="smsContact" type="tel" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consent Information -->
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="consent" id="consent" required>
+                        By checking the box below, I agree to receive emails and/or SMS text messages with promotions, updates and special offers from BoxedBetter. I understand that I can unsubscribe from any email at any time or by replying 'STOP' to any SMS text message. We respect your privacy and never share your information with third parties.
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group text-right">
+                    <input type="submit" class="btn custom-btn" value="Register Student">
+                </div>
+            </form>
+        </main>
+    </div>
+</div>

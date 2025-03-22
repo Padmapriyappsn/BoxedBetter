@@ -1,0 +1,101 @@
+<div class="text-container">
+    <div class="row">
+        <main class="col-md-12">
+            <h1 style="font-size: 3em; text-align: left; margin-top: 100px; text-shadow: -1px -1px 0 #f1eae9;">
+                {{viewData.student.firstName}} {{viewData.student.lastName}} - student: {{viewData.student.StudentNum}}
+            </h1>
+            <hr />
+
+            <form action="/student/update" method="POST">
+                <input type="hidden" name="StudentNum" value="{{viewData.student.StudentNum}}" />
+
+                <fieldset>
+                    <legend>Personal Information</legend>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="firstName">First Name:</label>
+                                <input class="form-control" id="firstName" name="firstName" type="text" value="{{viewData.student.firstName}}" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lastName">Last Name:</label>
+                                <input class="form-control" id="lastName" name="lastName" type="text" value="{{viewData.student.lastName}}" />
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input class="form-control" id="email" name="email" type="email" value="{{viewData.student.email}}" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressStreet">Address (Street):</label>
+                                <input class="form-control" id="addressStreet" name="addressStreet" type="text" value="{{viewData.student.addressStreet}}" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressCity">Address (City):</label>
+                                <input class="form-control" id="addressCity" name="addressCity" type="text" value="{{viewData.student.addressCity}}" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressProvince">Address (Province):</label>
+                                <input class="form-control" id="addressProvince" name="addressProvince" type="text" value="{{viewData.student.addressProvince}}" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <legend>Order Information</legend>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="TA">Loyalty Program:</label><br />
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="TA" name="TA" {{#if viewData.student.TA}}checked{{/if}}>
+                                    <label class="form-check-label" for="TA">
+                                        Premium Member
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Order Status:</label><br />
+                                <label class="form-check-label">
+                                    <input type="radio" value="Full Time" name="status" {{#equal viewData.student.status "Full Time"}}checked{{/equal}} /> Full Time
+                                </label>
+                                <label class="form-check-label">
+                                    <input type="radio" value="Part Time" name="status" {{#equal viewData.student.status "Part Time"}}checked{{/equal}} /> Part Time
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="restaurant">Ordered From:</label>
+                                {{#if viewData.restaurants}}
+                                    <select class="form-control" id="restaurant" name="restaurant">
+                                        <option value="">Select Restaurant</option>
+                                        {{#each viewData.restaurants}}
+                                            <option value="{{restaurantId}}" {{#if selected}}selected{{/if}}>{{restaurantCode}}</option>
+                                        {{/each}}
+                                    </select>
+                                {{else}}
+                                    <div>No Restaurants</div>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <hr />
+
+                <input type="submit" class="btn btn-primary float-right" value="Update Student Information" />
+            </form>
+        </main>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+<div class="row">
+    <div class="col-md-12">
+        <br>
+        <h1 style="font-size: 3em; text-align: left;  margin-top: 100px; text-shadow: -1px -1px 0 #f1eae9;">
+            Students
+            <a href="/students/add" style="display: inline-block; background-color: #4f9363; color: black; padding: 10px 20px; text-align: center; border-radius: 5px; font-size: 16px; float: right; margin: 10px 0; text-decoration: none; outline: none; text-shadow: none;"
+            onmouseover="this.style.backgroundColor='#d25a1e'; this.style.color='white'; this.style.textShadow='none';"
+            onmouseout="this.style.backgroundColor='#4f9363'; this.style.color='black'; this.style.textShadow='none';">
+            Add Student
+            </a>
+
+            </a>
+        </h1>
+        <hr />
+        
+        {{#unless students}}
+        <div class="col-md-12 text-center">
+            <strong>{{message}}</strong>
+        </div>
+        {{else}}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Student Num</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Delete record</th> <!-- New column header for Remove button -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each students}}
+                    <tr>
+                        <td>{{StudentNum}}</td>
+                        <td><a href="/student/{{StudentNum}}">{{firstName}} {{lastName}}</a></td>
+                        <td><a href="mailto:{{email}}">{{email}}</a></td>
+                        <td>{{addressStreet}}, {{addressCity}}, {{addressProvince}}</td>
+                        <td>
+                            <a href="/student/delete/{{StudentNum}}" class="btn btn-danger">Remove</a>
+                        </td> <!-- Remove button with link to delete route -->
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        {{/unless}}
+    </div>
+</div>

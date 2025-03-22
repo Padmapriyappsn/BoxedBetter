@@ -1,0 +1,48 @@
+<div class="row">
+    <div class="col-md-12">
+        <br>
+        <h1 style="font-size: 3.5em; text-align: left; margin-top: 100px; text-shadow: -1px -1px 0 #f1eae9;">
+            Restaurants
+            <a href="/restaurants/add" style="display: inline-block; background-color: #4f9363; color: black; padding: 10px 20px; text-align: center; border-radius: 5px; font-size: 16px; float: right; margin: 10px 0; text-decoration: none; text-shadow: none;"
+            onmouseover="this.style.backgroundColor='#d25a1e'; this.style.color='black';"
+            onmouseout="this.style.backgroundColor='#4f9363'; this.style.color='black';">
+            Add New Restaurant
+            </a>
+        </h1>
+        <hr />
+
+        {{#unless restaurants}}
+        <div class="col-md-12 text-center">
+            <strong>{{message}}</strong>
+        </div>
+        {{else}}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Restaurant Code</th>
+                        <th>Restaurant Name</th>
+                        <th>Location</th>
+                        <th>Owner</th>
+                        <th>Action</th> <!-- Updated header for action column -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each restaurants}}
+                    <tr>
+                        <td>{{restaurantCode}}</td>
+                        <td><a href="/restaurant/{{restaurantId}}">{{restaurantName}}</a></td>
+                        <td>{{location}}</td>
+                        <td>{{owner}}</td>
+                        <td>
+                            <!-- Remove button with delete link -->
+                            <a href="/restaurant/delete/{{restaurantId}}" class="btn btn-danger">Remove</a>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        {{/unless}}
+    </div>
+</div>

@@ -1,0 +1,26 @@
+<div class="row">
+    <div class="col-md-12">
+        <br>
+        <h1 style="font-size: 3.5em; text-align: left; margin-top: 100px; text-shadow: -1px -1px 0 #f1eae9;">{{restaurant.restaurantDescription}}</h1>
+        <hr />
+        <form action="/restaurant/update" method="POST">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="restaurantCode">Restaurant Code:</label>
+                        <input class="form-control" id="restaurantCode" name="restaurantCode" type="text" value="{{restaurant.restaurantCode}}" />
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="form-group">
+                        <label for="restaurantDescription">Restaurant Description:</label>
+                        <input class="form-control" id="restaurantDescription" name="restaurantDescription" type="text" value="{{restaurant.restaurantDescription}}" />
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="restaurantId" value="{{restaurant.restaurantId}}" />
+            <hr />
+            <input type="submit" class="btn btn-primary float-right" value="Update Restaurant">
+        </form>
+    </div>
+</div>

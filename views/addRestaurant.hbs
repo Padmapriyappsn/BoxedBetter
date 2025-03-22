@@ -1,0 +1,50 @@
+<div class="text-container">
+    <div class="row">
+        <main class="col-md-12">
+            <h1 style="font-size: 3.5em; text-align: left; color: #4f9363; margin-top: 100px; text-shadow: -1px -1px 0 #f1eae9;">
+                Restaurant Information
+            </h1>
+            
+            <form action="/restaurants/add" method="POST">
+                <!-- Restaurant Information -->
+                <fieldset>
+                    <legend>Please Enter Restaurant Details here</legend>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                <label for="restaurantCode">Restaurant Code:</label>
+                                <input class="form-control" id="restaurantCode" name="restaurantCode" type="text" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                <label for="restaurantName">Restaurant Name:</label>
+                                <input class="form-control" id="restaurantName" name="restaurantName" type="text" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                <label for="location">Location:</label>
+                                <input class="form-control" id="location" name="location" type="text" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                <label for="owner">Owner:</label>
+                                <input class="form-control" id="owner" name="owner" type="text" required>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <hr />
+                <!-- Submit Button -->
+                <div class="form-group text-right">
+                    <input type="submit" class="btn custom-btn" value="Add Restaurant">
+                </div>
+            </form>
+        </main>
+    </div>
+</div>

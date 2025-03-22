@@ -1,0 +1,63 @@
+<div class="login-container">
+    <h2>Login to BoxedBetter</h2>
+    <form action="/login" method="POST">
+        <div class="form-group">
+            <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+            <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+        <div class="form-group">
+            <label for="role">Login as:</label>
+            <select name="role" class="form-control" required>
+                <option value="customer">Student</option>
+                <option value="restaurant">Restaurant</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-login">Login</button>
+    </form>
+    <a href="/register" class="register-link">New here? Create an account</a>
+</div>
+
+<style>
+    .login-container {
+        width: 300px; /* Adjust width */
+        margin: 50px auto; /* Centering */
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        text-align: center;
+        background-color: #f9f9f9;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-login:hover {
+        background-color: #0056b3;
+    }
+
+    .register-link {
+        display: block;
+        margin-top: 10px;
+    }
+</style>
