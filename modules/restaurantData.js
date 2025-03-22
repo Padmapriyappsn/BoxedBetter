@@ -35,7 +35,7 @@ var Restaurant = sequelize.define('Restaurant', {
         autoIncrement: true
     },
     restaurantCode: Sequelize.STRING,
-    restaurantDescription: Sequelize.STRING,
+    restaurantName: Sequelize.STRING,
     location : Sequelize.STRING,
     owner: Sequelize.STRING
 });
