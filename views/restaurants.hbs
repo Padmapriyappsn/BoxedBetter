@@ -13,7 +13,7 @@
 
         {{#unless restaurants}}
         <div class="col-md-12 text-center">
-            <strong>{{message}}</strong>
+            <strong>{{message}} {{^message}}No restaurants available.{{/message}}</strong>
         </div>
         {{else}}
         <div class="table-responsive">
@@ -22,9 +22,10 @@
                     <tr>
                         <th>Restaurant Code</th>
                         <th>Restaurant Name</th>
+                        <th>Restaurant Description</th>
                         <th>Location</th>
                         <th>Owner</th>
-                        <th>Action</th> <!-- Updated header for action column -->
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,11 +33,14 @@
                     <tr>
                         <td>{{restaurantCode}}</td>
                         <td><a href="/restaurant/{{restaurantId}}">{{restaurantName}}</a></td>
+                        <td>{{restaurantDescription}}</td>
                         <td>{{location}}</td>
                         <td>{{owner}}</td>
                         <td>
-                            <!-- Remove button with delete link -->
-                            <a href="/restaurant/delete/{{restaurantId}}" class="btn btn-danger">Remove</a>
+                            <a href="/restaurant/{{restaurantId}}" class="btn btn-warning">Edit</a>
+                            <form action="/restaurant/delete/{{restaurantId}}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">Remove</button>
+                            </form>
                         </td>
                     </tr>
                     {{/each}}

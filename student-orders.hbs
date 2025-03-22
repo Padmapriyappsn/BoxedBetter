@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header>
+        <h1>My Orders</h1>
+        <nav>
+            <ul>
+                <li><a href="/student/dashboard">Dashboard</a></li>
+                <li><a href="/student/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section>
+        <h2>Order History</h2>
+
+        {{#if orders.length}}
+            <ul class="order-list">
+                {{#each orders}}
+                    <li class="order-item">
+                        <h3>Order ID: {{this.orderId}}</h3>
+                        <p><strong>Restaurant:</strong> {{this.restaurantName}}</p>
+                        <p><strong>Food:</strong> {{this.foodName}}</p>
+                        <p><strong>Status:</strong> {{this.status}}</p>
+                        <p><strong>Total Price:</strong> ${{this.totalPrice}}</p>
+                    </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>No orders found.</p>
+        {{/if}}
+    </section>
+</body>
+</html>

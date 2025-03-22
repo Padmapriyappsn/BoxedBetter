@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Student Dashboard</h1>
+        <nav>
+            <!-- Navigation links styled as buttons -->
+            <div class="nav-buttons">
+                <a href="/student/orders" class="nav-button" id="orders-btn">My Orders</a>
+                <form action="/student/logout" method="POST">
+                    <button type="submit" class="nav-button">Logout</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <section>
+        <h2>Available Food Items</h2>
+
+        {{#if foods.length}}
+            <ul class="food-list">
+                {{#each foods}}
+                    <li class="food-item">
+                        <h3>{{this.foodName}}</h3>
+                        <p><strong>Restaurant:</strong> {{this.restaurantName}}</p>
+                        <p><strong>Description:</strong> {{this.description}}</p>
+                        <p><strong>Discounted Price:</strong> ${{this.discountedPrice}}</p>
+                        <form action="/student/order/{{this.foodId}}" method="POST">
+                            <button type="submit">Order Now</button>
+                        </form>
+                    </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>No food items available at the moment. Please check back later!</p>
+        {{/if}}
+    </section>
+</body>
+</html>

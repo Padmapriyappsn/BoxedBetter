@@ -1,0 +1,11 @@
+<h2>Pickup Order</h2>
+<ul>
+    {{#each readyOrders}}
+    <li>
+        Order #{{this.id}} is ready for pickup
+        <form action="/pickup/{{this.id}}" method="POST">
+            <button type="submit">Mark as Picked Up</button>
+        </form>
+    </li>
+    {{/each}}
+</ul>

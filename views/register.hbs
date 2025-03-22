@@ -4,15 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <script>
+        // Function to toggle fields based on role selection
+        function toggleFields() {
+            const role = document.getElementById('role').value;
+            if (role === 'student') {
+                document.getElementById('student-fields').style.display = 'block';
+                document.getElementById('restaurant-fields').style.display = 'none';
+            } else if (role === 'restaurant') {
+                document.getElementById('student-fields').style.display = 'none';
+                document.getElementById('restaurant-fields').style.display = 'block';
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Register</h1>
-    <form action="/register" method="POST">
+    <form action="/role" method="POST">
         <label for="role">Select your role:</label>
-        <select id="role" name="role" required>
+        <select id="role" name="role" required onchange="toggleFields()">
             <option value="student">Student</option>
             <option value="restaurant">Restaurant</option>
         </select>
+
         <button type="submit">Submit</button>
     </form>
 </body>

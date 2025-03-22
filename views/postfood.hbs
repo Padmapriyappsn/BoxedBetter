@@ -1,0 +1,10 @@
+<h2>Post Food Discount</h2>
+<form action="/postfood" method="POST">
+    <label for="foodName">Food Name:</label>
+    <input type="text" name="foodName" required>
+    
+    <label for="price">Discounted Price:</label>
+    <input type="number" name="price" required min="0" step="0.01">
+    
+    <button type="submit">Post</button>
+</form>

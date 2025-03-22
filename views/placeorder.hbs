@@ -1,0 +1,13 @@
+<h2>Place Order</h2>
+{{#if isStudent}}
+<form action="/order" method="POST">
+    <select name="foodItem" required>
+        {{#each foodItems}}
+        <option value="{{this.id}}">{{this.name}} - ${{this.price}}</option>
+        {{/each}}
+    </select>
+    <button type="submit">Order Now</button>
+</form>
+{{else}}
+<p>You must be logged in as a student to place an order.</p>
+{{/if}}

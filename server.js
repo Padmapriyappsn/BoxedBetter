@@ -4,8 +4,13 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const restaurantData = require("./modules/restaurantData");
 const exphbs = require('express-handlebars');
+const bcrypt = require('bcryptjs');  // For hashing the password
 
 const app = express();
+const session = require('express-session');
+
+const { Student, Restaurant, Order, Food } = require('./modules/restaurantData');  // Path to restrauntData.js
+const { getRestaurants} = require('./modules/restaurantData');  // Path to restrauntData.js
 
 // Configure express-handlebars
 app.engine('.hbs', exphbs.engine({
@@ -46,6 +51,15 @@ app.use(function(req, res, next) {
 // Middleware routes to serve static files
 app.use(express.static(path.join(__dirname, 'views'))); // Serve static files from the 'views' folder
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from the 'public' folder
+app.use(express.static(path.join(__dirname, 'modules'))); // Serve static files from the 'modules' folder
+
+//check session
+app.use(session({
+    secret: 'yourSecretKey',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }  // Set to `true` if using HTTPS
+}));
 
 // GET /students route
 app.get("/students", (req, res) => {
@@ -155,10 +169,10 @@ app.get("/aboutfoodwaste", (req, res) => {
 app.get("/students/add", (req, res) => {
     restaurantData.getRestaurants()
         .then(data => {
-            res.render("addstudent", { restaurants: data });
+            res.render("addStudent", { restaurants: data });
         })
         .catch(() => {
-            res.render("addstudent", { restaurants: [] });
+            res.render("addStudent", { restaurants: [] });
         });
 });
 
@@ -167,16 +181,313 @@ app.get("/restaurants/add", (req, res) => {
     res.render("addRestaurant"); // Ensure 'addRestaurant.hbs' exists in the 'views' directory
 });
 
-// GET /login route
-app.get("/login", (req, res) => {
-    res.render("login");  // Ensure 'login.hbs' exists in the 'views' directory
+// Route to render login page
+app.get('/login', (req, res) => {
+    res.render('login');
 });
+
+
+// POST request for login
+app.post('/login', (req, res) => {
+    const { email, password, role } = req.body;
+
+    // Check if the role is selected as student or restaurant
+    if (role === 'student') {
+        // Student login logic
+        Student.findOne({ where: { email } })
+            .then(student => {
+                if (!student) {
+                    console.log("Student not found in DB");  // Debugging line
+                    return res.status(400).send('Invalid credentials');
+                }
+                bcrypt.hash("1234", 10, (err, hash) => {
+                    console.log("New hashed password:", hash);
+                });                
+                console.log("Stored password:", student.password);
+                console.log("Entered password:", password);             
+                if (student) {
+                    /*bcrypt.compare(string, student.password, (err, isMatch) => {
+                        if (err) return res.status(500).send('Error checking password');
+                        
+                        if (isMatch) {
+                            // Store student in session
+                            req.session.student = student;
+                            return res.redirect('/student-dashboard');
+                        } else {
+                            return res.status(400).send('Invalid credentials');
+                        }
+                    });*/
+                    if (password === student.password) {
+                        req.session.student = student;
+                        return res.redirect('/student-dashboard');
+                    } else {
+                        return res.status(400).send('Invalid credentials');
+                    }                    
+                } else {
+                    return res.status(400).send('Invalid credentials');
+                }
+            })
+            .catch(err => res.status(500).send('Error logging in'));
+    } else if (role === 'restaurant') {
+        // Restaurant login logic
+        Restaurant.findOne({ where: { email } })
+            .then(restaurant => {
+                if (restaurant) {
+                    // Restaurant is authenticated, store in session
+                    req.session.restaurant = restaurant;
+                    req.session.restaurantId = restaurant.id;  // Store restaurantId in session
+                    return res.redirect('/restaurant-dashboard');
+                } else {
+                    return res.status(400).send('Invalid credentials');
+                }
+            })
+            .catch(err => res.status(500).send('Error logging in'));
+    } else {
+        return res.status(400).send('Invalid role selected');
+    }
+});
+
+// Logout Route for Restaurant
+app.get('/restaurant/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send("Error during logout");
+        }
+        // Redirect to login page after session is destroyed
+        res.redirect('/login');
+    });
+});
+
+// Logout Route for Student (if needed, same structure)
+app.get('/student/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send("Error during logout");
+        }
+        // Redirect to login page after session is destroyed
+        res.redirect('/login');
+    });
+});
+app.post('/student/logout', (req, res) => {
+    // Check if the user is authenticated
+    if (req.session && req.session.user) {
+        // Clear the session
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).send("Logout failed!");
+            }
+            // Redirect the user to the login page
+            return res.redirect('/login');
+        });
+    } else {
+        return res.status(400).send("Student Not Found");
+    }
+});
+
+//display student dashboard with food items to place order
+app.get('/student-dashboard', (req, res) => {
+    if (!req.session.student) {
+        return res.redirect('/login');  // If not logged in, redirect to login
+    }
+
+    // Fetch available restaurants with discounted food
+    getRestaurants()
+        .then(restaurants => {
+            res.render('student-dashboard', { 
+                student: req.session.student,
+                restaurants: restaurants
+            });
+        })
+        .catch(err => res.status(500).send('Error fetching restaurants'));
+});
+//display restaurant dashboard to sell discounted food items
+app.get('/restaurant-dashboard', (req, res) => {
+    if (!req.session.restaurant) {
+        return res.redirect('/login');  // If not logged in, redirect to login
+    }
+
+    res.render('restaurant-dashboard', { restaurant: req.session.restaurant });
+});
+//POST to Post Discounted Food Items
+app.post('/restaurant-dashboard', (req, res) => {
+    if (!req.session.restaurant) {
+        return res.redirect('/login');  // If not logged in, redirect to login
+    }
+
+    const { restaurantId, foodName, description, discountedPrice } = req.body;
+
+    // Add food item to the restaurant's menu
+    const foodData = {
+        restaurantId: req.session.restaurant.restaurantId,
+        foodName,
+        description,
+        discountedPrice
+    };
+
+    // Save the new food item (assuming you have a Food model or similar)
+    addFoodItem(foodData)
+        .then(() => res.redirect('/restaurant-dashboard'))  // Redirect to the restaurant dashboard after adding food
+        .catch(err => res.status(500).send('Error adding food item'));
+});
+
+// Route to render place order page
+app.get('/placeorder', (req, res) => {
+    if (req.session.user && req.session.user.role === 'student') {
+        restaurantData.getFoodItems().then((foodItems) => {
+            res.render('placeorder', { isStudent: true, foodItems });
+        });
+    } else {
+        res.render('placeorder', { isStudent: false });
+    }
+});
+
+// Route to handle placing an order
+app.post('/order', async (req, res) => {
+    const { foodItem } = req.body;
+    const order = await restaurantData.placeOrder(req.session.user.id, foodItem);
+    res.redirect('/trackorderstatus');
+});
+
+// Route to render track order status page
+app.get('/trackorderstatus', async (req, res) => {
+    const orders = await restaurantData.getOrders(req.session.user.id);
+    res.render('trackorderstatus', { orders });
+});
+
+// Route to render pickup orders page (for restaurant staff)
+app.get('/pickuporder', async (req, res) => {
+    const readyOrders = await restaurantData.getReadyOrders();
+    res.render('pickuporder', { readyOrders });
+});
+
+// Route to post discounted food
+app.get('/postfood', (req, res) => {
+    res.render('postfood');
+});
+
+// Route to handle posting discounted food
+app.post("/postfood", (req, res) => {
+    const { foodName, description, discountedPrice, restaurantId } = req.body;
+
+    console.log(req.body);  // Log to check if data is being sent correctly
+
+    // Check if all required fields are provided
+    if (!foodName || !description || !discountedPrice || !restaurantId) {
+        return res.render("restaurant-dashboard", {
+            message: "Missing required fields for food item"
+        });
+    }
+
+    // Proceed with adding the food item to the database
+    restaurantData.addFoodItem({
+        foodName,
+        description,
+        discountedPrice,
+        restaurantId
+    })
+    .then(() => {
+        res.redirect("/restaurant/dashboard");
+    })
+    .catch((err) => {
+        res.render("restaurant-dashboard", {
+            message: "Error posting food item: " + err.message
+        });
+    });
+});
+
+// Example route to render restaurant dashboard page
+app.get('/restaurant-dashboard', (req, res) => {
+    // Ensure restaurantId is set in session
+    const restaurantId = req.session.restaurant ? req.session.restaurant.id : null;
+
+    if (!restaurantId) {
+        return res.redirect('/login'); // Redirect if no restaurantId is found
+    }
+
+    // Fetch food items or any other data you need
+    Food.findAll({ where: { restaurantId } })
+        .then(foods => {
+            res.render('restaurant-dashboard', { foods, restaurantId });
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send('Error fetching food items');
+        });
+});
+// GET /student/orders route - to display the student's orders
+app.get('/student/orders', (req, res) => {
+    if (!req.session.student) {
+        return res.redirect('/login');  // If not logged in, redirect to login
+    }
+    const studentId = req.session.student.studentId;
+
+    // Assuming you have a method to fetch the orders for a student
+    Order.findAll({
+        where: { studentId: req.session.student.studentId }
+    })
+    .then(orders => {
+        if (orders.length > 0) {
+            res.render('student-orders', { orders: orders });
+        } else {
+            res.render('student-orders', { message: "No orders found" });
+        }
+    })
+    .catch(err => {
+        console.error('Error fetching orders:', err);
+        res.status(500).send('Error fetching orders');
+    });
+});
+// POST /student/orders route - to place an order
+app.post('/student/orders', (req, res) => {
+    if (!req.session.student) {
+        return res.redirect('/login');  // If not logged in, redirect to login
+    }
+
+    // Extract order details from the request body
+    const { foodItemId, quantity } = req.body;
+    
+    if (!foodItemId || !quantity || quantity <= 0) {
+        return res.status(400).send("Invalid food item or quantity");
+    }
+
+    // Fetch the food item details from the database
+    Food.findByPk(foodItemId)
+        .then(foodItem => {
+            if (!foodItem) {
+                return res.status(404).send("Food item not found");
+            }
+
+            // Calculate the total price (assuming the food item has a `discountedPrice` field)
+            const totalPrice = foodItem.discountedPrice * quantity;
+
+            // Create a new order in the database
+            Order.create({
+                studentId: req.session.student.studentId,
+                foodItemId: foodItem.id,
+                quantity: quantity,
+                totalPrice: totalPrice,
+                status: 'Pending' // Initial order status
+            })
+            .then(() => {
+                res.redirect('/student/orders'); // Redirect to the orders page after successful order
+            })
+            .catch(err => {
+                console.error('Error placing order:', err);
+                res.status(500).send('Error placing order');
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching food item:', err);
+            res.status(500).send('Error processing order');
+        });
+});
+
 
 // POST /students/add route
 app.post('/students/add', (req, res) => {
-    restaurantData.addstudent(req.body)
+    restaurantData.addStudent(req.body)
         .then(() => {
-            res.redirect('/students');
+            res.redirect('/login');
         })
         .catch(() => {
             res.status(500).send('Error adding student');
@@ -187,9 +498,10 @@ app.post('/students/add', (req, res) => {
 app.post("/restaurants/add", (req, res) => {
     restaurantData.addRestaurant(req.body)
         .then(() => {
-            res.redirect('/restaurants');
+            res.redirect('/login');
         })
-        .catch(() => {
+        .catch((err) => {
+            console.error("Error adding restaurant:", err); // Debugging line
             res.status(500).send("Error adding restaurant");
         });
 });
@@ -206,26 +518,66 @@ app.post("/student/update", (req, res) => {
         });
 });
 
+// POST /restraunts/update route
+app.post("/restraunts/update", (req, res) => {
+    restaurantData.updateRestaurant(req.body)
+        .then(() => {
+            res.redirect('/restaurants');
+        })
+        .catch(() => {
+            res.status(500).send("Unable to update Restaurant");
+        });
+});
+
 // GET /register route
 app.get("/register", (req, res) => {
     res.render("register"); // Ensure 'register.hbs' exists in the 'views' directory
 });
 
 // POST /register route
-app.post("/register", (req, res) => {
+app.post('/register', (req, res) => {
+    const { firstName, lastName, email, password, mobilenumber } = req.body;
+
+    // Hash the password before storing it
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+        if (err) return res.status(500).send('Error hashing password');
+
+        const studentData = {
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            mobilenumber,
+        };
+
+        // Save the student in the database
+        addStudent(studentData)
+            .then(() => res.redirect('/login'))
+            .catch(err => res.status(500).send('Error registering student'));
+    });
+});
+app.post('/role', (req, res) => {
     const { role } = req.body;
-    if (role === "student") {
-        res.redirect("/students/add");
-    } else if (role === "restaurant") {
-        res.redirect("/restaurants/add");
+
+    if (role === 'student') {
+        // Render the addStudent.hbs page
+        res.render('addStudent');
+    } else if (role === 'restaurant') {
+        // Render the addrestaurant.hbs page
+        res.render('addRestaurant');
     } else {
-        res.status(400).send("Invalid role selected");
+        res.send('Invalid role selected!');
     }
 });
 
 // 404 route
 app.use((req, res) => {
     res.status(404).send("Page Not Found");
+});
+
+process.on('unhandledRejection', (error, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', error);
+    // Optional: process.exit(1); // You can choose to exit the process if it's a critical error
 });
 
 // Initialize data and start server

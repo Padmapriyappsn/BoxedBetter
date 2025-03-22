@@ -1,0 +1,13 @@
+<h2>Track Order</h2>
+<table>
+    <tr>
+        <th>Order ID</th>
+        <th>Status</th>
+    </tr>
+    {{#each orders}}
+    <tr>
+        <td>{{this.id}}</td>
+        <td>{{this.status}}</td>
+    </tr>
+    {{/each}}
+</table>
