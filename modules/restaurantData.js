@@ -442,6 +442,48 @@ function postFoodDiscount(foodData) {
         }
     });
 }
+// Function to track an order by order ID
+function trackOrder(orderId) {
+    return new Promise((resolve, reject) => {
+        if (!orderId) {
+            reject("Order ID is required.");
+            return;
+        }
+
+        // Assuming you have an 'Order' model or data source to retrieve order information
+        // Replace 'Order' and the query logic with your actual data access method
+        Order.findOne({ orderId: orderId })
+            .then(order => {
+                if (!order) {
+                    reject("Order not found.");
+                    return;
+                }
+                resolve(order); // Resolve with the order object
+            })
+            .catch(error => {
+                console.error("Error tracking order:", error);
+                reject("Unable to track order.");
+            });
+    });
+}
+// Function to get all food items from all restaurants
+function getAllFoodItems() {
+    return new Promise((resolve, reject) => {
+        Food.findAll()
+            .then(foods => {
+                if (foods.length > 0) {
+                    //console.log(foods);
+                    resolve(foods);
+                } else {
+                    reject("No food items found.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching all food items:", error);
+                reject("Unable to fetch food items.");
+            });
+    });
+}
 
 // Export functions
 module.exports = { 
@@ -467,6 +509,7 @@ module.exports = {
     updateFoodItem, 
     deleteFoodItem,
     getFoodByRestaurantId,
+    getAllFoodItems,
     postFoodDiscount,
     placeOrder,
     trackOrder

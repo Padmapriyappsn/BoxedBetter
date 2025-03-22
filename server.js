@@ -10,7 +10,7 @@ const app = express();
 const session = require('express-session');
 
 const { Student, Restaurant, Order, Food } = require('./modules/restaurantData');  // Path to restrauntData.js
-const { getRestaurants, getFoodByRestaurantId, addFoodItem , deleteFoodItem} = require('./modules/restaurantData');  // Path to restrauntData.js
+const { getRestaurants, getFoodByRestaurantId, addFoodItem , deleteFoodItem, getAllFoodItems} = require('./modules/restaurantData');  // Path to restrauntData.js
 
 // Configure express-handlebars
 app.engine('.hbs', exphbs.engine({
@@ -233,8 +233,8 @@ app.post('/login', (req, res) => {
                 bcrypt.hash("1234", 10, (err, hash) => {
                     console.log("New hashed password:", hash);
                 });                
-                console.log("Stored password:", student.password);
-                console.log("Entered password:", password);             
+                //console.log("Stored password:", student.password);
+                //console.log("Entered password:", password);             
                 if (student) {
                     /*bcrypt.compare(string, student.password, (err, isMatch) => {
                         if (err) return res.status(500).send('Error checking password');
@@ -277,22 +277,23 @@ app.post('/login', (req, res) => {
     }
 });
 
-
 //display student dashboard with food items to place order
 app.get('/student-dashboard', (req, res) => {
     if (!req.session.student) {
         return res.redirect('/login');  // If not logged in, redirect to login
     }
 
-    // Fetch available restaurants with discounted food
-    getRestaurants()
-        .then(restaurants => {
-            res.render('student-dashboard', { 
+    getAllFoodItems()
+        .then(foods => {
+            res.render('student-dashboard', {
                 student: req.session.student,
-                restaurants: restaurants
+                foods: foods // Pass the foods array to the template
             });
         })
-        .catch(err => res.status(500).send('Error fetching restaurants'));
+        .catch(err => {
+            console.error("Error fetching all food items:", err);
+            res.status(500).send('Error fetching food items.');
+        });
 });
 
 app.get('/restaurant-dashboard', async (req, res) => {
@@ -365,7 +366,7 @@ app.post('/restaurant/delete-food/:foodId', async (req, res) => {
 });
 
 // Route to handle placing an order
-router.post('/student/place-order', async (req, res) => {
+app.post('/student/place-order', async (req, res) => {
     try {
         // Extract order details from the request body
         const { foodId, quantity } = req.body; // or whatever your form sends.
@@ -389,7 +390,7 @@ router.post('/student/place-order', async (req, res) => {
 });
 // Route to handle viewing an order (if needed, typically GET is used for viewing)
 // If you want to use POST, you might be sending data to filter orders.
-router.post('/student/view-order', async (req, res) => {
+app.post('/student/view-order', async (req, res) => {
     try {
         const { orderId } = req.body; // Example: orderId from the request body
         const studentId = req.session.studentId;
@@ -414,7 +415,7 @@ router.post('/student/view-order', async (req, res) => {
 });
 
 // Route to track an order (if you want to use POST, you might send data to filter tracking)
-router.post('/track-order', async (req, res) => {
+app.post('/track-order', async (req, res) => {
     try {
         const { orderId } = req.body;
         const studentId = req.session.studentId;
