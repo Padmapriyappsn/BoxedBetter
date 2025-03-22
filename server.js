@@ -10,7 +10,7 @@ const app = express();
 const session = require('express-session');
 
 const { Student, Restaurant, Order, Food } = require('./modules/restaurantData');  // Path to restrauntData.js
-const { getRestaurants} = require('./modules/restaurantData');  // Path to restrauntData.js
+const { getRestaurants, getFoodByRestaurantId, addFoodItem , deleteFoodItem} = require('./modules/restaurantData');  // Path to restrauntData.js
 
 // Configure express-handlebars
 app.engine('.hbs', exphbs.engine({
@@ -53,13 +53,43 @@ app.use(express.static(path.join(__dirname, 'views'))); // Serve static files fr
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'modules'))); // Serve static files from the 'modules' folder
 
-//check session
+// Configure session middleware
 app.use(session({
-    secret: 'yourSecretKey',
+    secret: 'your-secret-key', // Replace with a strong, random secret
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }  // Set to `true` if using HTTPS
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: false, // Set to true in production with HTTPS
+        maxAge: 1000 * 60 * 60 * 24 // 1 day (adjust as needed)
+    }
 }));
+
+// Logout Route for Restaurant
+app.get('/restaurant/logout', (req, res) => {
+    console.log("Logout route hit!"); // Verify route execution
+    //res.redirect('/login');
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Logout error:", err); // Log potential errors
+            return res.status(500).send("Error during logout");
+        }
+        console.log("Session destroyed!"); // Confirm session destruction
+        console.log("Redirecting to /login"); // Verify redirect
+        res.redirect('/login');
+    });
+});
+
+// Logout Route for Student
+app.get('/student/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send("Error during logout");
+        }
+        // Redirect to login page after session is destroyed
+        res.redirect('/login');
+    });
+});
 
 // GET /students route
 app.get("/students", (req, res) => {
@@ -235,7 +265,7 @@ app.post('/login', (req, res) => {
                 if (restaurant) {
                     // Restaurant is authenticated, store in session
                     req.session.restaurant = restaurant;
-                    req.session.restaurantId = restaurant.id;  // Store restaurantId in session
+                    //req.session.restaurantId = restaurant.id;  // Store restaurantId in session
                     return res.redirect('/restaurant-dashboard');
                 } else {
                     return res.status(400).send('Invalid credentials');
@@ -247,42 +277,6 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Logout Route for Restaurant
-app.get('/restaurant/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).send("Error during logout");
-        }
-        // Redirect to login page after session is destroyed
-        res.redirect('/login');
-    });
-});
-
-// Logout Route for Student (if needed, same structure)
-app.get('/student/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).send("Error during logout");
-        }
-        // Redirect to login page after session is destroyed
-        res.redirect('/login');
-    });
-});
-app.post('/student/logout', (req, res) => {
-    // Check if the user is authenticated
-    if (req.session && req.session.user) {
-        // Clear the session
-        req.session.destroy((err) => {
-            if (err) {
-                return res.status(500).send("Logout failed!");
-            }
-            // Redirect the user to the login page
-            return res.redirect('/login');
-        });
-    } else {
-        return res.status(400).send("Student Not Found");
-    }
-});
 
 //display student dashboard with food items to place order
 app.get('/student-dashboard', (req, res) => {
@@ -300,23 +294,33 @@ app.get('/student-dashboard', (req, res) => {
         })
         .catch(err => res.status(500).send('Error fetching restaurants'));
 });
-//display restaurant dashboard to sell discounted food items
-app.get('/restaurant-dashboard', (req, res) => {
-    if (!req.session.restaurant) {
-        return res.redirect('/login');  // If not logged in, redirect to login
-    }
 
-    res.render('restaurant-dashboard', { restaurant: req.session.restaurant });
+app.get('/restaurant-dashboard', async (req, res) => {
+    if (!req.session.restaurant) {
+        return res.redirect('/login');
+    }
+    const restaurantId = req.session.restaurant.restaurantId;
+
+    try {
+        const foods = await Food.findAll({ where: { restaurantId } }); // Or getFoodByRestaurantId(restaurantId);
+
+        if (foods.length === 0) {
+            return res.redirect('/post-new-item'); // Redirect if no foods found
+        }
+
+        res.render('restaurant-dashboard', { restaurant: req.session.restaurant, restaurantId: restaurantId, foods: foods });
+    } catch (error) {
+        console.error("Error fetching foods", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
-//POST to Post Discounted Food Items
 app.post('/restaurant-dashboard', (req, res) => {
     if (!req.session.restaurant) {
-        return res.redirect('/login');  // If not logged in, redirect to login
+        return res.redirect('/login');
     }
 
-    const { restaurantId, foodName, description, discountedPrice } = req.body;
+    const { foodName, description, discountedPrice } = req.body;
 
-    // Add food item to the restaurant's menu
     const foodData = {
         restaurantId: req.session.restaurant.restaurantId,
         foodName,
@@ -324,10 +328,40 @@ app.post('/restaurant-dashboard', (req, res) => {
         discountedPrice
     };
 
-    // Save the new food item (assuming you have a Food model or similar)
     addFoodItem(foodData)
-        .then(() => res.redirect('/restaurant-dashboard'))  // Redirect to the restaurant dashboard after adding food
-        .catch(err => res.status(500).send('Error adding food item'));
+        .then(() => res.redirect('/restaurant-dashboard'))
+        .catch(err => {
+            console.error("Error adding food item:", err);
+            res.status(500).send('Error adding food item: ' + err.message); // or render the error
+        });
+});
+//view orders placed by student in this restraunt
+app.get('/restaurant/orders', async (req, res) => {
+    if (!req.session.restaurant) {
+        return res.redirect('/login');
+    }
+    const restaurantId = req.session.restaurant.restaurantId;
+    try {
+        // Assuming you have a function or model to fetch orders
+        const orders = await getOrdersByRestaurantId(restaurantId);
+        res.render('restaurant-orders', { orders: orders });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// route to delete food item in restraunt
+app.post('/restaurant/delete-food/:foodId', async (req, res) => {
+    const { foodId } = req.params;
+    console.log("Delete route hit for foodId:", foodId); // Debugging line
+    try {
+        await restaurantData.deleteFoodItem(foodId); // Call the deleteFoodItem function from restaurantData
+        res.redirect('/restaurant-dashboard');
+    } catch (err) {
+        console.error('Error deleting food item:', err);
+        res.redirect('/restaurant-dashboard?error=' + encodeURIComponent(err.message));
+    }
 });
 
 // Route to render place order page
@@ -360,60 +394,6 @@ app.get('/pickuporder', async (req, res) => {
     res.render('pickuporder', { readyOrders });
 });
 
-// Route to post discounted food
-app.get('/postfood', (req, res) => {
-    res.render('postfood');
-});
-
-// Route to handle posting discounted food
-app.post("/postfood", (req, res) => {
-    const { foodName, description, discountedPrice, restaurantId } = req.body;
-
-    console.log(req.body);  // Log to check if data is being sent correctly
-
-    // Check if all required fields are provided
-    if (!foodName || !description || !discountedPrice || !restaurantId) {
-        return res.render("restaurant-dashboard", {
-            message: "Missing required fields for food item"
-        });
-    }
-
-    // Proceed with adding the food item to the database
-    restaurantData.addFoodItem({
-        foodName,
-        description,
-        discountedPrice,
-        restaurantId
-    })
-    .then(() => {
-        res.redirect("/restaurant/dashboard");
-    })
-    .catch((err) => {
-        res.render("restaurant-dashboard", {
-            message: "Error posting food item: " + err.message
-        });
-    });
-});
-
-// Example route to render restaurant dashboard page
-app.get('/restaurant-dashboard', (req, res) => {
-    // Ensure restaurantId is set in session
-    const restaurantId = req.session.restaurant ? req.session.restaurant.id : null;
-
-    if (!restaurantId) {
-        return res.redirect('/login'); // Redirect if no restaurantId is found
-    }
-
-    // Fetch food items or any other data you need
-    Food.findAll({ where: { restaurantId } })
-        .then(foods => {
-            res.render('restaurant-dashboard', { foods, restaurantId });
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send('Error fetching food items');
-        });
-});
 // GET /student/orders route - to display the student's orders
 app.get('/student/orders', (req, res) => {
     if (!req.session.student) {
@@ -505,7 +485,23 @@ app.post("/restaurants/add", (req, res) => {
             res.status(500).send("Error adding restaurant");
         });
 });
+// GET /post-new-item route
+app.get('/post-new-item', (req, res) => {
+    const restaurantId = req.session.restaurant.restaurantId;
+    res.render('post-new-item', { restaurantId: restaurantId });
+});
 
+// POST /post-new-item route
+app.post('/post-new-item', (req, res) => {
+    restaurantData.addFoodItem(req.body)
+        .then(() => {
+            res.redirect('/restaurant-dashboard'); // Redirect on success
+        })
+        .catch((err) => {
+            console.error("Error adding food item:", err); // Debugging line
+            res.status(500).render('post-new-item', {message: "Error adding food item", error: true, restaurantId: req.session.restaurant.restaurantId}); // Render error message
+        });
+});
 
 // POST /student/update route
 app.post("/student/update", (req, res) => {

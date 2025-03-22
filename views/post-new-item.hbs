@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post New Food Item</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #f2f2f2;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        nav label {
+            margin-right: 10px;
+        }
+
+        nav select, nav a {
+            margin-right: 10px;
+            padding: 5px 10px;
+        }
+
+        section {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        form {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label, input, textarea, button {
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            color: red;
+        }
+
+        .success-message {
+            color: green;
+        }
+
+        a {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Restaurant Dashboard</h1>
+        <nav>
+            <label for="nav-dropdown">Menu</label>
+            <select id="nav-dropdown" onchange="window.location.href=this.value;">
+                <option value="#">Select an option</option>
+                <option value="/restaurant/orders">View Orders</option>
+                <option value="/post-new-item">Post New Item</option>
+            </select>
+            <a href="/restaurant/logout" style="color: black; text-decoration: none">Logout</a>
+        </nav>
+    </header>
+
+    <header>
+        <h1>Post New Food Item</h1>
+    </header>
+
+    <section>
+        {{#if message}}
+            <p class="{{#if error}}error-message{{else}}success-message{{/if}}">{{message}}</p>
+        {{/if}}
+
+        <form action="/post-new-item" method="POST">
+            <label for="foodName">Food Name:</label>
+            <input type="text" id="foodName" name="foodName" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required></textarea>
+
+            <label for="discountedPrice">Discounted Price ($):</label>
+            <input type="number" id="discountedPrice" name="discountedPrice" step="0.01" required>
+
+            <label for="restaurantId">Restaurant ID:</label>
+            <input type="hidden" name="restaurantId" value="{{restaurantId}}">
+            {{restaurantId}}
+
+            <button type="submit">Post Food Item</button>
+        </form>
+
+        <a href="/restaurant-dashboard">Back to Dashboard</a>
+    </section>
+</body>
+</html>
