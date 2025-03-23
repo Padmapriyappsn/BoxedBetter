@@ -6,7 +6,6 @@
             </h1>
             
             <form action="/restaurants/add" method="POST">
-                <!-- Restaurant Information -->
                 <fieldset>
                     <legend>Please Enter Restaurant Details here</legend>
                     <div class="row">
@@ -29,15 +28,28 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label for="location">Location:</label>
-                                <input class="form-control" id="location" name="location" type="text" required>
+                                <label for="addressStreet">Address (Street):</label>
+                                <input class="form-control" id="addressStreet" name="addressStreet" type="text">
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressCity">Address (City):</label>
+                                <input class="form-control" id="addressCity" name="addressCity" type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="addressProvince">Address (Province):</label>
+                                <input class="form-control" id="addressProvince" name="addressProvince" type="text">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="owner">Owner:</label>
                                 <input class="form-control" id="owner" name="owner" type="text" required>
@@ -46,14 +58,21 @@
                     </div>
                 </fieldset>
                 <div class="row">
-                        <div class="col-md-6">
-                           <div class="form-group">
-                               <label for="email">Email:</label>
-                               <input class="form-control" id="email" name="email" type="email" required>
-                           </div>
-                       </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input class="form-control" id="email" name="email" type="email" required>
+                        </div>
+                    </div>
                 </div>
-                <!-- Password Field -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="mobilenumber">Mobile number:</label>
+                            <input class="form-control" id="mobilenumber" name="mobilenumber" type="text" required>
+                        </div>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <div class="form-group">
@@ -64,7 +83,6 @@
                     </div>
                 </div>
 
-                <!-- Re-enter Password Field -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <div class="form-group">
@@ -74,7 +92,6 @@
                     </div>
                 </div>
 
-                <!-- Submit Button -->
                 <div class="form-group text-right">
                     <input type="submit" class="btn custom-btn" value="Add Restaurant">
                 </div>

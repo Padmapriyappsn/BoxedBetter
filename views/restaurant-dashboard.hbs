@@ -26,19 +26,21 @@
     </style>
 </head>
 <body>
+    <h1>Welcome, {{restaurant.restaurantName}}!</h1>
     <header>
-        <h1 style="color: white;">Welcome, {{restaurant.restaurantName}}!</h1>
-        <h1 style="color: white;">Restaurant Dashboard</h1>
+        <h2 style="color: white;">Restaurant Dashboard</h1>
         <nav>
             <label for="nav-dropdown">Menu</label>
             <select id="nav-dropdown" onchange="window.location.href=this.value;">
                 <option value="#">Select an option</option>
                 <option value="/restaurant/orders">View Orders</option>
+                <option value="/restaurant-dashboard">Restaurant Dashboard</option>
                 <option value="/post-new-item">Post New Item</option>
             </select>
             <a href="/restaurant/logout" style="color: black; text-decoration: none">Logout</a>
         </nav>
     </header>
+    
     <section>
         <h2>Current Food Items</h2>
 
@@ -56,7 +58,7 @@
                     {{#each foods}}
                         <tr>
                             <td>{{this.foodName}}</td>
-                            <td>{{this.description}}</td>
+                            <td>{{this.Quantity}}</td>
                             <td>${{this.discountedPrice}}</td>
                             <td>
                                 <form action="/restaurant/delete-food/{{this.foodId}}" method="POST">
@@ -71,5 +73,6 @@
             <p>No food items available. Add new food items to post discounts!</p>
         {{/if}}
     </section>
+    
 </body>
 </html>

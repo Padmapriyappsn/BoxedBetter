@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .menu-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .meal-option {
+            border-bottom: 2px solid #ddd;
+            padding: 20px;
+        }
+        .meal-option:last-child {
+            border-bottom: none;
+        }
+        .meal-option h2 {
+            color: #444;
+        }
+        .meal-option ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .meal-option li {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d9cdb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-container">
+        <h1>Menu</h1>
+
+        <!-- Bowl Section -->
+        <div class="meal-option" id="bowl">
+            <h2>Bowl - $12</h2>
+            <p><strong>1 Side + 1 Entree</strong></p>
+            <p><strong>Choose 1 Side:</strong></p>
+            <ul>
+                {{#each sides}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <p><strong>Choose 1 Entree:</strong></p>
+            <ul>
+                {{#each entrees}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <div class="price">$12</div>
+        </div>
+
+        <!-- Plate Section -->
+        <div class="meal-option" id="plate">
+            <h2>Plate - $13.50</h2>
+            <p><strong>1 Side + 2 Entrees</strong></p>
+            <p><strong>Choose 1 Side:</strong></p>
+            <ul>
+                {{#each sides}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <p><strong>Choose 2 Entrees:</strong></p>
+            <ul>
+                {{#each entrees}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <div class="price">$13.50</div>
+        </div>
+
+        <!-- Bigger Plate Section -->
+        <div class="meal-option" id="bigger-plate">
+            <h2>Bigger Plate - $15</h2>
+            <p><strong>1 Side + 3 Entrees</strong></p>
+            <p><strong>Choose 1 Side:</strong></p>
+            <ul>
+                {{#each sides}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <p><strong>Choose 3 Entrees:</strong></p>
+            <ul>
+                {{#each entrees}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <div class="price">$15</div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -21,17 +21,28 @@
         <h2>Order History</h2>
 
         {{#if orders.length}}
-            <ul class="order-list">
-                {{#each orders}}
-                    <li class="order-item">
-                        <h3>Order ID: {{this.orderId}}</h3>
-                        <p><strong>Restaurant:</strong> {{this.restaurantName}}</p>
-                        <p><strong>Food:</strong> {{this.foodName}}</p>
-                        <p><strong>Status:</strong> {{this.status}}</p>
-                        <p><strong>Total Price:</strong> ${{this.totalPrice}}</p>
-                    </li>
-                {{/each}}
-            </ul>
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Restaurant</th>
+                        <th>Food Item</th>
+                        <th>Status</th>
+                        <th>Total Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each orders}}
+                        <tr>
+                            <td>{{this.orderId}}</td>
+                            <td>{{this.restaurant.name}}</td> <!-- Restaurant name -->
+                            <td>{{this.foodItem.foodName}}</td> <!-- Food item name -->
+                            <td>{{this.orderStatus}}</td> <!-- Order status -->
+                            <td>${{this.totalPrice}}</td> <!-- Total price, adjust as needed -->
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
         {{else}}
             <p>No orders found.</p>
         {{/if}}

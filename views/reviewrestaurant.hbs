@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Review Restaurant</title>
+</head>
+<body>
+    <h1>Review Restaurant</h1>
+    <form action="/restaurant/{{restaurantId}}/review" method="post">
+        <label for="rating">Rating:</label>
+        <select name="rating" id="rating">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select><br><br>
+
+        <label for="comment">Comment:</label><br>
+        <textarea name="comment" id="comment" rows="4" cols="50"></textarea><br><br>
+
+        <input type="submit" value="Submit Review">
+    </form>
+    <a href="/student-dashboard">Back to Student Dashboard</a>
+</body>
+</html>

@@ -12,7 +12,7 @@ var sequelize = new Sequelize('SenecaDB', 'SenecaDB_owner', 'o4qptfdThlH6', {
 
 // Define the Student model with password field
 var Student = sequelize.define('Student', {
-    StudentNum: {
+    StudentId: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
@@ -40,9 +40,12 @@ var Restaurant = sequelize.define('Restaurant', {
     restaurantCode: Sequelize.STRING,
     restaurantName: Sequelize.STRING,
     restaurantDescription: Sequelize.STRING,
-    location: Sequelize.STRING,
+    addressStreet: Sequelize.STRING,
+    addressCity: Sequelize.STRING,
+    addressProvince: Sequelize.STRING,
     owner: Sequelize.STRING,
     email: Sequelize.STRING,
+    mobilenumber: Sequelize.STRING,
     password: {
         type: Sequelize.STRING, // Store the restaurant password (hashed)
         allowNull: false
@@ -60,8 +63,8 @@ var Food = sequelize.define('Food', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    description: {
-        type: Sequelize.STRING,
+    quantity: {
+        type: Sequelize.INTEGER,
         allowNull: false
     },
     discountedPrice: {
@@ -85,8 +88,12 @@ var Order = sequelize.define('Order', {
         primaryKey: true,
         autoIncrement: true
     },
-    orderDetails: Sequelize.STRING, // Can store details like food items, quantities, etc.
-    orderStatus: Sequelize.STRING, // For example: "pending", "in progress", "completed"
+    orderDetails: Sequelize.STRING, // Store details like food items, quantities, etc.
+    orderStatus: Sequelize.STRING, // "pending", "in progress", "completed"
+    totalPrice: {
+        type: Sequelize.FLOAT,
+        allowNull: false
+    },
     foodId: {
         type: Sequelize.INTEGER,
         references: {
@@ -95,11 +102,11 @@ var Order = sequelize.define('Order', {
         },
         allowNull: false
     },
-    studentNum: {
+    StudentId: {
         type: Sequelize.INTEGER,
         references: {
             model: Student,
-            key: 'StudentNum'
+            key: 'StudentId'
         },
         allowNull: false
     },
@@ -112,15 +119,50 @@ var Order = sequelize.define('Order', {
         allowNull: false
     }
 });
-
+// Define the Review model to track reviews created by students for restaurants
+const Review = sequelize.define('Review', {
+    reviewId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    rating: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    comment: {
+        type: Sequelize.STRING,
+        allowNull: true
+    },
+    StudentId: { // Ensure exact match
+        type: Sequelize.INTEGER,
+        references: {
+            model: Student,
+            key: 'StudentId'
+        },
+        allowNull: false
+    },
+    restaurantId: { // Ensure exact match
+        type: Sequelize.INTEGER,
+        references: {
+            model: Restaurant,
+            key: 'restaurantId'
+        },
+        allowNull: false
+    }
+});
 // Establish relationships
 Restaurant.hasMany(Order, { foreignKey: 'restaurantId' });
-Student.hasMany(Order, { foreignKey: 'studentNum' });
+Student.hasMany(Order, { foreignKey: 'StudentId' });
 Order.belongsTo(Restaurant, { foreignKey: 'restaurantId' });
-Order.belongsTo(Student, { foreignKey: 'studentNum' });
+Order.belongsTo(Student, { foreignKey: 'StudentId' });
 Order.belongsTo(Food, { foreignKey: 'foodId' });
 Restaurant.hasMany(Food, { foreignKey: 'restaurantId' });
 Food.belongsTo(Restaurant, { foreignKey: 'restaurantId' });
+Restaurant.hasMany(Review, { foreignKey: 'restaurantId' });
+Student.hasMany(Review, { foreignKey: 'StudentId' });
+Review.belongsTo(Restaurant, { foreignKey: 'restaurantId' });
+Review.belongsTo(Student, { foreignKey: 'StudentId' });
 
 // Initialize the database
 function initialize() {
@@ -201,7 +243,7 @@ function updateStudent(studentData) {
         }
 
         Student.update(studentData, {
-            where: { StudentNum: studentData.StudentNum }
+            where: { StudentId: studentData.StudentId }
         })
         .then(() => resolve())
         .catch(() => reject("unable to update student"));
@@ -211,7 +253,7 @@ function updateStudent(studentData) {
 // Function to add a new restaurant
 function addRestaurant(restaurant) {
     return new Promise((resolve, reject) => {
-        if (!restaurant.restaurantCode || !restaurant.restaurantName || !restaurant.location || !restaurant.owner || !restaurant.restaurantDescription || !restaurant.email || !restaurant.password) {
+        if (!restaurant.restaurantCode || !restaurant.restaurantName || !restaurant.addressStreet || !restaurant.addressCity || !restaurant.addressProvince|| !restaurant.owner || !restaurant.restaurantDescription || !restaurant.email || !restaurant.mobilenumber ||!restaurant.password) {
             reject("Missing required fields");
         } else {
             Restaurant.create(restaurant);
@@ -261,10 +303,10 @@ function deleteRestaurantById(id) {
 }
 
 // Function to delete student by ID
-function deleteStudentById(StudentNum) {
+function deleteStudentById(StudentId) {
     return new Promise((resolve, reject) => {
         Student.destroy({
-            where: { StudentNum: StudentNum }
+            where: { StudentId: StudentId }
         })
         .then(deletedCount => {
             if (deletedCount > 0) {
@@ -297,7 +339,7 @@ function getRestaurantById(restaurantId) {
 function getStudentById(studentId) {
     return new Promise((resolve, reject) => {
         Student.findOne({
-            where: { StudentNum: studentId }  // Assuming the column name is 'studentId' in your DB
+            where: { StudentId: StudentId }  // Assuming the column name is 'studentId' in your DB
         })
         .then((student) => {
             if (student) {
@@ -332,7 +374,7 @@ function placeOrder(orderData) {
 // Function to add a food item
 function addFoodItem(foodData) {
     return new Promise((resolve, reject) => {
-        if (!foodData.foodName || !foodData.description || !foodData.discountedPrice || !foodData.restaurantId) {
+        if (!foodData.foodName || !foodData.quantity || !foodData.discountedPrice || !foodData.restaurantId) {
             reject("Missing required fields for food item");
         } else {
             Food.create(foodData)
@@ -345,7 +387,7 @@ function addFoodItem(foodData) {
 // Function to update a food item
 function updateFoodItem(foodData) {
     return new Promise((resolve, reject) => {
-        if (!foodData.foodId || !foodData.foodName || !foodData.description || !foodData.discountedPrice) {
+        if (!foodData.foodId || !foodData.foodName || !foodData.quantity || !foodData.discountedPrice) {
             reject("Missing required fields for food item");
         } else {
             Food.update(foodData, {
@@ -398,10 +440,10 @@ function getFoodByRestaurantId(restaurantId) {
 }
 
 // Function to get all orders for a student
-function getOrdersByStudent(studentNum) {
+function getOrdersByStudent(StudentId) {
     return new Promise((resolve, reject) => {
         Order.findAll({
-            where: { studentNum: studentNum }
+            where: { StudentId: StudentId }
         })
         .then((orders) => {
             if (orders.length > 0) {
@@ -433,7 +475,7 @@ function getOrdersByRestaurant(restaurantId) {
 // Function to add a food item with discount to the database
 function postFoodDiscount(foodData) {
     return new Promise((resolve, reject) => {
-        if (!foodData.foodName || !foodData.description || !foodData.discountedPrice || !foodData.restaurantId) {
+        if (!foodData.foodName || !foodData.quantity || !foodData.discountedPrice || !foodData.restaurantId) {
             reject("Missing required fields for food item");
         } else {
             Food.create(foodData)
@@ -467,22 +509,98 @@ function trackOrder(orderId) {
     });
 }
 // Function to get all food items from all restaurants
+ /*function getAllFoodItems() {
+     return new Promise((resolve, reject) => {
+         Food.findAll()
+             .then(foods => {
+                 if (foods.length > 0) {
+                     //console.log(foods);
+                     resolve(foods);
+                 } else {
+                     reject("No food items found.");
+                 }
+             })
+             .catch(error => {
+                 console.error("Error fetching all food items:", error);
+                 reject("Unable to fetch food items.");
+             });
+     });
+ }*/
 function getAllFoodItems() {
-    return new Promise((resolve, reject) => {
-        Food.findAll()
-            .then(foods => {
-                if (foods.length > 0) {
-                    //console.log(foods);
-                    resolve(foods);
-                } else {
-                    reject("No food items found.");
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching all food items:", error);
-                reject("Unable to fetch food items.");
+    try {
+            const foods =  Food.findAll({
+                include: {
+                    model: Restaurant,
+                    attributes: ['restaurantId', 'restaurantName'],
+                },
+                raw: true, // This converts the result into plain objects instead of Sequelize instances
+                nest: true  // Ensures nested objects like Restaurant are properly structured
             });
+            return foods;
+        } catch (error) {
+            console.error('Error fetching food items:', error);
+            throw error;
+        }
+}
+     getAllFoodItems().then(data => console.log(JSON.stringify(data, null, 2)));
+
+// Function to get all available food items with restaurant names
+function getAvailableFoodItems() {
+    try {
+        const foods = Food.findAll({
+            where: { isAvailable: true }, // Ensure you're filtering available food
+            include: [{ model: Restaurant, as: 'restaurant', attributes: ['name'] }]
+        });
+
+        return foods.map(food => ({
+            foodId: food.id,
+            foodName: food.foodName,
+            description: food.quantity,
+            discountedPrice: food.discountedPrice,
+            restaurantName: food.restaurant.name // Display restaurant name instead of ID
+        }));
+    } catch (error) {
+        console.error('Error fetching food items:', error);
+        return [];
+    }
+}
+
+//Adds a new review 
+// if the issue is in the addReview function.
+function addReview(reviewData) {
+    return Review.create({
+        rating: reviewData.rating,
+        comment: reviewData.comment,
+        StudentId: parseInt(reviewData.StudentId),
+        restaurantId: reviewData.restaurantId,
+    })
+    .then(review => {
+        console.log("Review successfully added:", review);
+        return review;
+    })
+    .catch(error => {
+        console.error("Error adding review:", error);
+        throw error;
     });
+}
+
+//Retrieves all reviews for a given restaurant from the database.
+function getReviewsByRestaurantId(restaurantId) {
+    return Review.findAll({
+        where: { restaurantId: restaurantId }
+    })
+        .then(reviews => reviews)
+        .catch(error => {
+            throw error;
+        });
+}
+//Retrieves a student by their ID from the database.
+function getStudentById(StudentId) {
+    return Student.findByPk(StudentId)
+        .then(student => student)
+        .catch(error => {
+            throw error;
+        });
 }
 
 // Export functions
@@ -512,5 +630,10 @@ module.exports = {
     getAllFoodItems,
     postFoodDiscount,
     placeOrder,
-    trackOrder
+    trackOrder,    
+    addReview,
+    getReviewsByRestaurantId,
+    getStudentById,
+    Review,
+    getAvailableFoodItems
 };

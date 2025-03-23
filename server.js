@@ -9,8 +9,8 @@ const bcrypt = require('bcryptjs');  // For hashing the password
 const app = express();
 const session = require('express-session');
 
-const { Student, Restaurant, Order, Food } = require('./modules/restaurantData');  // Path to restrauntData.js
-const { getRestaurants, getFoodByRestaurantId, addFoodItem , deleteFoodItem, getAllFoodItems} = require('./modules/restaurantData');  // Path to restrauntData.js
+const { Student, Restaurant, Order, Food,Review } = require('./modules/restaurantData');  // Path to restrauntData.js
+const { getRestaurants, getFoodByRestaurantId, addFoodItem , deleteFoodItem, getAllFoodItems, addReview, getReviewsByRestaurantId, getStudentById} = require('./modules/restaurantData');  // Path to restrauntData.js
 
 // Configure express-handlebars
 app.engine('.hbs', exphbs.engine({
@@ -118,9 +118,9 @@ app.get("/restaurants", (req, res) => {
 });
 
 // GET /student/:studentId route
-app.get("/student/:studentId", (req, res) => { 
+app.get("/student/:StudentId", (req, res) => { 
     let viewData = {}; 
-    restaurantData.getStudentById(req.params.studentId)
+    restaurantData.getStudentById(req.params.StudentId)
         .then((data) => { 
             viewData.student = data || null; 
         })
@@ -159,8 +159,8 @@ app.get("/restaurant/:id", (req, res) => {
 });
 
 // GET /student/delete/:studentId route
-app.get("/student/delete/:studentId", (req, res) => {
-    restaurantData.deleteStudentById(parseInt(req.params.studentId, 10))
+app.get("/student/delete/:StudentId", (req, res) => {
+    restaurantData.deleteStudentById(parseInt(req.params.StudentId, 10))
         .then(() => {
             res.redirect('/students');
         })
@@ -295,7 +295,7 @@ app.get('/student-dashboard', (req, res) => {
             res.status(500).send('Error fetching food items.');
         });
 });
-
+//display restaurant dashboard to post food items 
 app.get('/restaurant-dashboard', async (req, res) => {
     if (!req.session.restaurant) {
         return res.redirect('/login');
@@ -365,43 +365,20 @@ app.post('/restaurant/delete-food/:foodId', async (req, res) => {
     }
 });
 
-// Route to handle placing an order
-app.post('/student/place-order', async (req, res) => {
-    try {
-        // Extract order details from the request body
-        const { foodId, quantity } = req.body; // or whatever your form sends.
-        const studentId = req.session.studentId; // Get student ID from session or authentication
-
-        // Validate the input data
-        if (!foodId || !quantity || !studentId) {
-            return res.status(400).send('Missing order details.');
-        }
-
-        // Logic to create an order in your database
-        const order = await placeOrder(studentId, foodId, quantity); // Replace with your function
-
-        // Send a success response
-        res.status(201).json({ message: 'Order placed successfully', order }); // 201 Created
-
-    } catch (error) {
-        console.error('Error placing order:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
 // Route to handle viewing an order (if needed, typically GET is used for viewing)
 // If you want to use POST, you might be sending data to filter orders.
 app.post('/student/view-order', async (req, res) => {
     try {
         const { orderId } = req.body; // Example: orderId from the request body
-        const studentId = req.session.studentId;
+        const StudentId = req.session.StudentId;
 
         // Validation
-        if (!orderId || !studentId) {
+        if (!orderId || !StudentId) {
             return res.status(400).send('Missing order ID.');
         }
 
         // Logic to fetch order details from the database
-        const orderDetails = await getOrdersByStudent(studentId); // Replace with your function
+        const orderDetails = await getOrdersByStudent(StudentId); // Replace with your function
 
         if (!orderDetails) {
             return res.status(404).send('Order not found.');
@@ -414,19 +391,103 @@ app.post('/student/view-order', async (req, res) => {
     }
 });
 
-// Route to track an order (if you want to use POST, you might send data to filter tracking)
-app.post('/track-order', async (req, res) => {
-    try {
-        const { orderId } = req.body;
-        const studentId = req.session.studentId;
 
-        if (!orderId || !studentId) {
-            return res.status(400).send('Missing order ID.');
+// Route to render pickup orders page (for restaurant staff)
+app.get('/pickuporder', async (req, res) => {
+    const readyOrders = await restaurantData.getReadyOrders();
+    res.render('pickuporder', { readyOrders });
+});
+
+// Route to handle placing an order
+app.post('/student/orders', async (req, res) => {
+    try {
+        if (!req.session.student) {
+            return res.redirect('/login'); // Ensure only logged-in students can place orders
         }
 
-        // Logic to fetch order tracking information
-        const trackingInfo = await fetchOrderTracking(orderId, studentId); // Replace with your function
+        const { foodId, quantity } = req.body;
+        const StudentId = req.session.student.StudentId;
 
+        if (!foodId || !quantity || quantity <= 0) {
+            return res.status(400).send('Invalid food item or quantity');
+        }
+
+        // Fetch food details
+        const foodItem = await Food.findByPk(foodId, {
+            include: [{ model: Restaurant }]
+        });
+
+        console.log("Fetched Food Item:", foodItem); // DEBUGGING: Log output
+
+        if (!foodItem) {
+            return res.status(404).send('Food item not found');
+        }
+
+        // Check if Restaurant association exists
+        console.log("FoodItem.Restaurant:", foodItem.Restaurant);
+
+        const restaurantId = foodItem.Restaurant?.restaurantId;
+        if (!restaurantId) {
+            return res.status(500).send("Restaurant association missing for food item.");
+        }
+
+        const totalPrice = foodItem.discountedPrice * quantity;
+
+        // Create the order
+        await Order.create({
+            foodId,
+            StudentId,
+            restaurantId,
+            orderDetails: `Ordered ${quantity}x ${foodItem.foodName}`,
+            orderStatus: 'pending',
+            totalPrice
+        });
+
+        console.log("Order placed successfully!");
+        res.redirect('/student/orders');
+
+    } catch (error) {
+        console.error('Error placing order:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Route to handle viewing orders (GET)
+app.get('/student/orders', async (req, res) => {
+    if (!req.session.student) {
+        return res.redirect('/login'); // Ensure only logged-in students can view their orders
+    }
+
+    const StudentId = req.session.student.StudentId;
+
+    try {
+        // Fetch orders with related Food and Restaurant data
+        const orders = await Order.findAll({
+            where: { StudentId: studentId },
+            include: [
+                { model: Food, as: 'foodItem' },     // Include related Food
+                { model: Restaurant, as: 'restaurant' } // Include related Restaurant
+            ]
+        });
+
+        // Render orders page with the fetched orders data
+        res.render('student-orders', { orders });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).send('Error fetching orders');
+    }
+});
+// Route to track an order (GET instead of POST)
+app.get('/track-order/:orderId', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const StudentId = req.session.student?.StudentId;
+
+        if (!StudentId) {
+            return res.redirect('/login');
+        }
+
+        const trackingInfo = await fetchOrderTracking(orderId, StudentId);
         if (!trackingInfo) {
             return res.status(404).send('Tracking information not found.');
         }
@@ -438,80 +499,111 @@ app.post('/track-order', async (req, res) => {
     }
 });
 
-// Route to render pickup orders page (for restaurant staff)
-app.get('/pickuporder', async (req, res) => {
-    const readyOrders = await restaurantData.getReadyOrders();
-    res.render('pickuporder', { readyOrders });
-});
-
-// GET /student/orders route - to display the student's orders
-app.get('/student/orders', (req, res) => {
-    if (!req.session.student) {
-        return res.redirect('/login');  // If not logged in, redirect to login
-    }
-    const studentId = req.session.student.studentId;
-
-    // Assuming you have a method to fetch the orders for a student
-    Order.findAll({
-        where: { studentId: req.session.student.studentId }
-    })
-    .then(orders => {
-        if (orders.length > 0) {
-            res.render('student-orders', { orders: orders });
+// Route to render the restaurants page to leave a review
+app.get("/restaurants", async (req, res) => {
+    try {
+        const restaurants = await restaurantData.getRestaurants();
+        if (restaurants.length > 0) {
+            res.render("restaurants", { restaurants: restaurants });
         } else {
-            res.render('student-orders', { message: "No orders found" });
+            res.render("restaurants", { message: "No restaurants found" });
         }
-    })
-    .catch(err => {
-        console.error('Error fetching orders:', err);
-        res.status(500).send('Error fetching orders');
-    });
-});
-// POST /student/orders route - to place an order
-app.post('/student/orders', (req, res) => {
-    if (!req.session.student) {
-        return res.redirect('/login');  // If not logged in, redirect to login
+    } catch (error) {
+        console.error('Error fetching restaurants:', error);
+        res.render("restaurants", { message: "No restaurants found" });
     }
-
-    // Extract order details from the request body
-    const { foodItemId, quantity } = req.body;
-    
-    if (!foodItemId || !quantity || quantity <= 0) {
-        return res.status(400).send("Invalid food item or quantity");
-    }
-
-    // Fetch the food item details from the database
-    Food.findByPk(foodItemId)
-        .then(foodItem => {
-            if (!foodItem) {
-                return res.status(404).send("Food item not found");
-            }
-
-            // Calculate the total price (assuming the food item has a `discountedPrice` field)
-            const totalPrice = foodItem.discountedPrice * quantity;
-
-            // Create a new order in the database
-            Order.create({
-                studentId: req.session.student.studentId,
-                foodItemId: foodItem.id,
-                quantity: quantity,
-                totalPrice: totalPrice,
-                status: 'Pending' // Initial order status
-            })
-            .then(() => {
-                res.redirect('/student/orders'); // Redirect to the orders page after successful order
-            })
-            .catch(err => {
-                console.error('Error placing order:', err);
-                res.status(500).send('Error placing order');
-            });
-        })
-        .catch(err => {
-            console.error('Error fetching food item:', err);
-            res.status(500).send('Error processing order');
-        });
 });
 
+// Route to render the review form
+app.get('/restaurant/:id/review', async (req, res) => {
+    try {
+        if (!req.session.student) {
+            return res.redirect('/login');
+        }
+        const restaurantId = req.params.id;
+        const StudentId = req.session.student.StudentId;
+        const student = await getStudentById(StudentId);
+        res.render('reviewrestaurant', { restaurantId: restaurantId, student: student });
+    } catch (error) {
+        console.error('Error rendering review form:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Route to handle submitting a review
+/*app.post('/restaurant/:id/review', async (req, res) => {
+    try {
+        if (!req.session.student) {
+            return res.redirect('/login');
+        }
+        const restaurantId = req.params.id;
+        const StudentId = req.session.student.StudentId;
+        const { rating, comment } = req.body;
+
+        const reviewData = {
+            restaurantId: restaurantId,
+            StudentId: StudentId,
+            rating: rating,
+            comment: comment
+        };
+
+        await addReview(reviewData);
+        res.redirect(`/restaurant/${restaurantId}`); // Redirect back to the restaurant page
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});*/
+app.post('/restaurant/:id/review', async (req, res) => {
+    try {
+        console.log("Restaurant ID:", req.params.id);
+        console.log("Request Body:", req.body);
+        console.log("Session Student:", req.session.student);
+
+        if (!req.session.student) {
+            return res.redirect('/login');
+        }
+
+        const restaurantId = req.params.id;
+        const StudentId = req.session.student.StudentId;
+
+        console.log("Student ID from Session:", StudentId); // Check this line
+
+        const { rating, comment } = req.body;
+
+        const reviewData = {
+            restaurantId: restaurantId,
+            StudentId: StudentId, // Make sure this is the correct variable
+            rating: rating,
+            comment: comment
+        };
+
+        console.log("Review Data Before addReview:", reviewData);
+
+        await addReview(reviewData);
+        res.redirect(`/student-dashboard`);
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+// Route to show reviews on the restaurant page
+app.get('/restaurant/:id', async (req, res) => {
+    try {
+        const restaurantId = req.params.id;
+        const restaurant = await restaurantData.getRestaurantById(parseInt(restaurantId));
+        const reviews = await getReviewsByRestaurantId(restaurantId);
+
+        if (restaurant) {
+            res.render("restaurant", { restaurant: restaurant, reviews: reviews });
+        } else {
+            res.status(404).send("Restaurant Not Found");
+        }
+    } catch (error) {
+        console.error('Error fetching restaurant or reviews:', error);
+        res.render("restaurant", { message: "No results for restaurant" });
+    }
+});
 
 // POST /students/add route
 app.post('/students/add', (req, res) => {

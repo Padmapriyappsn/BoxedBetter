@@ -33,11 +33,11 @@
                     {{#each students}}
                     <tr>
                         <td>{{StudentNum}}</td>
-                        <td><a href="/student/{{StudentNum}}">{{firstName}} {{lastName}}</a></td>
+                        <td><a href="/student/{{StudentId}}">{{firstName}} {{lastName}}</a></td>
                         <td><a href="mailto:{{email}}">{{email}}</a></td>
                         <td>{{addressStreet}}, {{addressCity}}, {{addressProvince}}</td>
                         <td>
-                            <a href="/student/delete/{{StudentNum}}" class="btn btn-danger">Remove</a>
+                            <a href="/student/delete/{{StudentId}}" class="btn btn-danger">Remove</a>
                         </td> <!-- Remove button with link to delete route -->
                     </tr>
                     {{/each}}
