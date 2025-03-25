@@ -39,18 +39,18 @@
 <body>
     <div class="dashboard-container">
         <div class="dashboard-card">
-            <h2>{{#if foodWasteReduced}}{{foodWasteReduced}} kg{{else}}0 kg{{/if}}</h2>
+            <h2>{{#if foodWasteReduced}}{{foodWasteReduced}} kg{{else}}3 kg{{/if}}</h2>
             <p>Food Waste Reduced</p>
         </div>
         <div class="dashboard-card">
-            <h2>{{#if studentsHelped}}{{studentsHelped}}{{else}}0{{/if}}</h2>
+            <h2>{{#if studentsHelped}}{{studentsHelped}}{{else}}4{{/if}}</h2>
             <p>Students Helped</p>
         </div>
     </div>
     <div class="text-container">
         <div class="row">
             <main class="col-md-12">
-                <h1 style="font-size: 3em; text-align: left; margin-top: 50px; text-shadow: -1px -1px 0 #f1eae9;">Welcome to BoxedBetter</h1>
+                <h1 style="font-size: 3em; text-align: left; margin-top: 1px; text-shadow: -1px -1px 0 #f1eae9;">Welcome to BoxedBetter</h1>
                 <br><p>BoxedBetter is a web-based surplus food marketplace that aims to reduce food waste while providing students in need with affordable meal options. We connect students with restaurants that have surplus food nearing closing time and offer it at a 75% discount.</p>
                 <br><p>We use location-based technology to match registered students with nearby restaurants. When a restaurant posts discounted food, we send alerts to students, allowing them to quickly pick up the food before it closes for the day.</p>
                 <br><p>Our mission is to reduce food waste, support local businesses, and make food accessible to those who need it most.</p>
@@ -58,14 +58,34 @@
         </div>
     </div>
    <div>
-            <br><img src="https://www.pandaexpress.ca/sites/ca/files/styles/background_desktop/public/2022-06/img-our-food-desktop.jpg?itok=ggpwT6eY" alt="ChineseFood" width="300" height="300">
-            <img src="https://playatgila.com/wp-content/uploads/Panda-Express-Bowl-Lrg.png" alt="Meals" width="300" height="300">
-            <img src="https://tb-static.uber.com/prod/image-proc/processed_images/0da00f84d6d6b0ea64ef3d7e7fe0889c/783282f6131ef2258e5bcd87c46aa87e.jpeg" alt="Panda express meals" width="300" height="300">
+        <br>
+        <img src="https://cdn.hercampus.com/SH6M70M3/as/5k6h5gf55qw7f68gn52c5t88/panda-express-best-menu-items?width=734&height=489&fit=crop&auto=webp&dpr=4" 
+        alt="ChineseFood" width="300" height="250"
+        style="margin: 15px; cursor: pointer; transition: transform 0.3s ease, z-index 0s 0.3s; border-radius: 5px; position: relative;"
+        onmouseover="this.style.transform='scale(1.5)'; this.style.zIndex='10';"
+        onmouseout="this.style.transform='scale(1)'; this.style.zIndex='1';"
+        onclick="window.open(this.src, '_blank')">
+
+        <img src="https://www.pandaexpress.ca/themes/panda/og-image.jpg" 
+        alt="Meals" width="300" height="200"
+        style="margin: 15px; cursor: pointer; transition: transform 0.3s ease, z-index 0s 0.3s; border-radius: 5px; position: relative;"
+        onmouseover="this.style.transform='scale(1.5)'; this.style.zIndex='10';"
+        onmouseout="this.style.transform='scale(1)'; this.style.zIndex='1';"
+        onclick="window.open(this.src, '_blank')">
+
+        <img src="https://olo-images-live.imgix.net/f7/f791dba4fc48450faa24d51159af3f93.png?auto=format%2Ccompress&q=60&cs=tinysrgb&w=716&h=474&fit=crop&fm=png32&s=4aff9382798fe00546bbbc128217ad08" 
+        alt="Panda express meals" width="300" height="250"
+        style="margin: 15px; cursor: pointer; transition: transform 0.3s ease, z-index 0s 0.3s; border-radius: 5px; position: relative;"
+        onmouseover="this.style.transform='scale(1.5)'; this.style.zIndex='10';"
+        onmouseout="this.style.transform='scale(1)'; this.style.zIndex='1';"
+        onclick="window.open(this.src, '_blank')">
+
+
     </div>
     <div class="text-container">
         <div class="row">
             <main class="col-md-12">
-                <h1>How It Works</h1>
+                <br><br><h1 style="font-size: 3em; text-align: left; margin-top: 1px; text-shadow: -1px -1px 0 #f1eae9;">How It Works</h1>
                 <p>Our platform connects restaurants with surplus food to students in need by leveraging location-based technology. Here's how it works:</p>
                 <ul>
                     <li><strong>For Restaurants:</strong> Post surplus food nearing closing time at a 75% discount.</li>

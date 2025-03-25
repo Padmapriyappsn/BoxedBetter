@@ -1,0 +1,32 @@
+<br>
+<header>
+    <h2 style="color: white;">Student Dashboard</h2>
+    <nav>
+        <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
+            <option value="#">Select an option</option>
+            <option value="/myorders">View Orders</option>
+            <option value="/student-dashboard">Place Order</option>
+            <option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}defaultId{{/if}}">Track Order</option>
+            <option value="/restaurants">Review Restaurant</option>
+        </select>
+        <a href="/student/logout" class="custom-btn">Logout</a>
+    </nav>
+</header>
+
+<section>
+    <h2>Track Order</h2>
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        {{#each orders}}
+        <tr>
+            <td>{{this.id}}</td>
+            <td>{{this.status}}</td>
+        </tr>
+        {{/each}}
+    </table>
+</section>

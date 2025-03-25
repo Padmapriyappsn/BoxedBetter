@@ -1,4 +1,19 @@
+<header>
+    <h2 style="color: white;">Student Dashboard</h2>
+    <nav>
+        <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
+            <option value="#">Select an option</option>
+            <option value="/myorders">View Orders</option>
+            <option value="#order-section">Place Order</option>
+            <option value="/track-order/{{student.StudentId}}">Track Order</option>
+            <option value="/restaurants">Review Restaurant</option>
+        </select>
+        <a href="/student/logout" class="custom-btn">Logout</a>
+    </nav>
+</header>
+
 <h2>Place Order</h2>
+
 {{#if isStudent}}
 <form action="/order" method="POST">
     <select name="foodItem" required>

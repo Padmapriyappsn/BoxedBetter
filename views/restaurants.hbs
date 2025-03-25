@@ -1,58 +1,60 @@
-<div class="row">
-    <div class="col-md-12">
-        <br>
-        <h1 style="font-size: 3.5em; text-align: left; margin-top: 100px; text-shadow: -1px -1px 0 #f1eae9;">
-            Restaurants
-            <a href="/restaurants/add" style="display: inline-block; background-color: #4f9363; color: black; padding: 10px 20px; text-align: center; border-radius: 5px; font-size: 16px; float: right; margin: 10px 0; text-decoration: none; text-shadow: none;" onmouseover="this.style.backgroundColor='#d25a1e'; this.style.color='black';" onmouseout="this.style.backgroundColor='#4f9363'; this.style.color='black';">
-                Add New Restaurant
-            </a>
-        </h1>
-        <hr />
+<br>
+<header>
+    <h2 style="color: white;">Student Dashboard</h2>
+    <nav>
+        <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
+            <option value="#">Select an option</option>
+            <option value="/myorders">View Orders</option>
+            <option value="/student-dashboard">Place Order</option>
+            <option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}defaultId{{/if}}">Track Order</option>
+            <option value="/restaurants">Review Restaurant</option>
+        </select>
+        <a href="/student/logout" class="custom-btn">Logout</a>
+    </nav>
+</header>
 
-        {{#unless restaurants}}
-        <div class="col-md-12 text-center">
-            <strong>{{message}} {{^message}}No restaurants available.{{/message}}</strong>
-        </div>
-        {{else}}
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Restaurant Code</th>
-                        <th>Restaurant Name</th>
-                        <th>Restaurant Description</th>
-                        <th>Location</th>
-                        <th>Owner</th>
-                        <th>Actions</th>
-                        <th>Reviews</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each restaurants}}
-                    <tr>
-                        <td>{{restaurantCode}}</td>
-                        <td><a href="/restaurant/{{restaurantId}}">{{restaurantName}}</a></td>
-                        <td>{{restaurantDescription}}</td>
-                        <td>{{addressStreet}}, {{addressCity}}, {{addressProvince}}</td>
-                        <td>{{owner}}</td>
-                        <td>
-                            <a href="/restaurant/{{restaurantId}}" class="btn btn-warning">Edit</a>
-                            <form action="/restaurant/delete/{{restaurantId}}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger">Remove</button>
-                            </form>
-                        </td>
-                        <td>
-                            {{#if restaurantId}}
-                                <a href="/restaurant/{{restaurantId}}/review">Review</a>
-                            {{else}}
-                                No Review Link
-                            {{/if}}
-                        </td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
-        {{/unless}}
-    </div>
+        
+<h2>
+    Restaurants
+            
+</h2>
+<hr />
+
+{{#unless restaurants}}
+<div class="col-md-12 text-center">
+    <strong>{{message}} {{^message}}No restaurants available.{{/message}}</strong>
 </div>
+{{else}}
+<div class="table-responsive">
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>Restaurant Code</th>
+                <th>Restaurant Name</th>
+                <th>Restaurant Description</th>
+                <th>Location</th>
+                <th>Owner</th>
+                <th>Reviews</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each restaurants}}
+            <tr>
+                <td>{{restaurantCode}}</td>
+                <td>{{restaurantName}}</a></td>
+                <td>{{restaurantDescription}}</td>
+                <td>{{addressStreet}}, {{addressCity}}, {{addressProvince}}</td>
+                <td>{{owner}}</td>
+                <td>
+                    {{#if restaurantId}}
+                        <a href="/restaurant/{{restaurantId}}/review">Review</a>
+                    {{else}}
+                        No Review Link
+                    {{/if}}
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+{{/unless}}

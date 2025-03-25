@@ -154,15 +154,16 @@ const Review = sequelize.define('Review', {
 // Establish relationships
 Restaurant.hasMany(Order, { foreignKey: 'restaurantId' });
 Student.hasMany(Order, { foreignKey: 'StudentId' });
-Order.belongsTo(Restaurant, { foreignKey: 'restaurantId' });
+Order.belongsTo(Restaurant, { foreignKey: 'restaurantId', as: 'Restaurant' });
 Order.belongsTo(Student, { foreignKey: 'StudentId' });
-Order.belongsTo(Food, { foreignKey: 'foodId' });
+Order.belongsTo(Food, { foreignKey: 'foodId', as: 'Food' });
 Restaurant.hasMany(Food, { foreignKey: 'restaurantId' });
 Food.belongsTo(Restaurant, { foreignKey: 'restaurantId' });
 Restaurant.hasMany(Review, { foreignKey: 'restaurantId' });
 Student.hasMany(Review, { foreignKey: 'StudentId' });
 Review.belongsTo(Restaurant, { foreignKey: 'restaurantId' });
 Review.belongsTo(Student, { foreignKey: 'StudentId' });
+Food.hasMany(Order, { foreignKey: 'foodId', as: 'Orders' });
 
 // Initialize the database
 function initialize() {

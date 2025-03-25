@@ -7,13 +7,18 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+    <br>
     <header>
-        <h1>My Orders</h1>
+        <h2 style="color: white;">Student Dashboard</h2>
         <nav>
-            <ul>
-                <li><a href="/student/dashboard">Dashboard</a></li>
-                <li><a href="/student/logout">Logout</a></li>
-            </ul>
+            <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
+                <option value="#">Select an option</option>
+                <option value="/myorders">View Orders</option>
+                <option value="/student-dashboard">Place Order</option>
+                <option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}defaultId{{/if}}">Track Order</option>
+                <option value="/restaurants">Review Restaurant</option>
+            </select>
+            <a href="/student/logout" class="custom-btn">Logout</a>
         </nav>
     </header>
 
@@ -35,10 +40,10 @@
                     {{#each orders}}
                         <tr>
                             <td>{{this.orderId}}</td>
-                            <td>{{this.restaurant.name}}</td> <!-- Restaurant name -->
-                            <td>{{this.foodItem.foodName}}</td> <!-- Food item name -->
-                            <td>{{this.orderStatus}}</td> <!-- Order status -->
-                            <td>${{this.totalPrice}}</td> <!-- Total price, adjust as needed -->
+                            <td>{{#if this.restaurant.restaurantName}}{{this.restaurant.restaurantName}}{{else}}N/A{{/if}}</td>
+                            <td>{{#if this.foodItem.foodName}}{{this.foodItem.foodName}}{{else}}N/A{{/if}}</td> 
+                            <td>{{this.orderStatus}}</td>
+                            <td>${{this.totalPrice}}</td>
                         </tr>
                     {{/each}}
                 </tbody>

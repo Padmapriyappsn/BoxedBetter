@@ -32,9 +32,9 @@
         <nav>
             <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
                 <option value="#">Select an option</option>
-                <option value="/student/orders">View Orders</option>
-                <option value="/student/orders">Place Order</option>
-                <option value="/track-order">Track Order</option>
+                <option value="/myorders">View Orders</option>
+                <option value="#order-section">Place Order</option> <!-- Fixed: Scrolls to ordering section -->
+                <option value="/track-order/{{student.StudentId}}">Track Order</option> <!-- Fixed: Passes student ID -->
                 <option value="/restaurants">Review Restaurant</option>
             </select>
             <a href="/student/logout" class="custom-btn">Logout</a>
@@ -51,29 +51,23 @@
 
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
         <script>
-            // Initialize the map centered on Toronto, Canada
             var map = L.map('map').setView([43.65107, -79.347015], 13); // Toronto, Canada
 
-            // Set up OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            // Marker to track the chosen location
             var marker = L.marker([43.65107, -79.347015], { draggable: true }).addTo(map);
 
-            // Update location when clicked on the map
             map.on('click', function(event) {
                 marker.setLatLng(event.latlng);
                 updateLocation(event.latlng.lat, event.latlng.lng);
             });
 
-            // Update location when the marker is dragged
             marker.on('dragend', function(event) {
                 updateLocation(event.target.getLatLng().lat, event.target.getLatLng().lng);
             });
 
-            // Function to get the address of a location
             function updateLocation(lat, lng) {
                 var geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
 
@@ -81,11 +75,16 @@
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById('pickup-location').value = data.display_name || "Location not found";
+                    })
+                    .catch(() => {
+                        document.getElementById('pickup-location').value = "Error retrieving location";
                     });
             }
         </script>
+    </section>
 
-        <!-- Available Food Items Table -->
+    <!-- Available Food Items Table -->
+    <section id="order-section">
         <h2>Available Food Items</h2>
         {{#if foods.length}}
             <table>
@@ -107,8 +106,8 @@
                             <td>${{this.discountedPrice}}</td>
                             <td>{{this.restaurantName}}</td>
                             <td>
-                                <form action="/student/orders" method="POST">
-                                    <input type="hidden" name="foodItemId" value="{{this.foodId}}">
+                                <form action="/order" method="POST">
+                                    <input type="hidden" name="foodId" value="{{this.foodId}}"> <!-- Fixed: Use 'foodId' -->
                                     <input type="number" name="quantity" min="1" value="1" required class="form-control" style="width: 60px;">
                             </td>
                             <td>
@@ -123,9 +122,11 @@
             <p>No food items available at the moment. Please check back later!</p>
         {{/if}}
     </section>
+    <br>
+    <br>
     <div>
-            <img src="https://playatgila.com/wp-content/uploads/Panda-Express-Bowl-Lrg.png" alt="Meals" width="300" height="300">
-            <img src="https://tb-static.uber.com/prod/image-proc/processed_images/0da00f84d6d6b0ea64ef3d7e7fe0889c/783282f6131ef2258e5bcd87c46aa87e.jpeg" alt="Panda express meals" width="300" height="300">
+        <img src="https://olo-images-live.imgix.net/78/783b6c093c4c44428516139005a621f1.png?auto=format%2Ccompress&q=60&cs=tinysrgb&w=524&h=350&fit=crop&fm=png32&s=983cef65ef867456ed7e8044ac219536" alt="Meals" width="300" height="250">
+        <img src="https://olo-images-live.imgix.net/ff/ff1cd394782b46298ddfc8086896444b.png?auto=format%2Ccompress&q=60&cs=tinysrgb&w=524&h=350&fit=crop&fm=png32&s=2002d1d4aec94ba4ddb114f2866029da" alt="Panda express meals" width="300" height="250">
     </div>
 
 </body>

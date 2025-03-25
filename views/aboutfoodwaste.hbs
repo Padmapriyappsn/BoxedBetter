@@ -21,7 +21,14 @@
     </div>
     <div class="image-gallery">
         <!-- Image of food waste infographic -->
-        <img src="./images/food.png" alt="Food Waste Infographic" width="500" height="500">
+        <br><img src="./images/food.png" 
+        alt="Food Waste Infographic" 
+        width="300" height="300"
+        style="cursor: pointer; transition: transform 0.3s ease;"
+        onmouseover="this.style.transform='scale(1.2)'"
+        onmouseout="this.style.transform='scale(1)'"
+        onclick="window.open(this.src, '_blank')">
+
         <!-- You can uncomment and use this link if you want another image -->
         <!-- <img src="https://www.toogoodtogo.com/en-ca/blog/wp-content/uploads/sites/2/2024/09/School-Lunch-Waste-Reduction.jpg" alt="Reducing School Lunch Waste"> -->
     </div>

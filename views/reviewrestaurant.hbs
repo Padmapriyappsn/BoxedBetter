@@ -4,6 +4,22 @@
     <title>Review Restaurant</title>
 </head>
 <body>
+
+    <br>
+    <header>
+        <h2 style="color: white;">Student Dashboard</h2>
+        <nav>
+            <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
+                <option value="#">Select an option</option>
+                <option value="/myorders">View Orders</option>
+                <option value="/student-dashboard">Place Order</option>
+                <option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}defaultId{{/if}}">Track Order</option>
+                <option value="/restaurants">Review Restaurant</option>
+            </select>
+            <a href="/student/logout" class="custom-btn">Logout</a>
+        </nav>
+    </header>
+
     <h1>Review Restaurant</h1>
     <form action="/restaurant/{{restaurantId}}/review" method="post">
         <label for="rating">Rating:</label>
@@ -20,6 +36,5 @@
 
         <input type="submit" value="Submit Review">
     </form>
-    <a href="/student-dashboard">Back to Student Dashboard</a>
 </body>
 </html>

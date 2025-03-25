@@ -398,12 +398,169 @@ app.get('/pickuporder', async (req, res) => {
     res.render('pickuporder', { readyOrders });
 });
 
-// Route to handle placing an order
+// Route to view an order (GET)
+app.get('/myorders', async (req, res) => {
+    if (!req.session.student || !req.session.student.StudentId) {
+        console.error("No student session found.");
+        return res.redirect('/login');
+    }
+
+    const StudentId = Number(req.session.student.StudentId);
+
+    if (isNaN(StudentId)) {
+        console.error("StudentId:", req.session.student.StudentId);
+        return res.status(400).send("Invalid Student ID.");
+    }
+
+    try {
+        const orders = await Order.findAll({
+            where: { StudentId: StudentId },  // Filter orders by student ID
+            include: [
+                { model: Food, as: 'Food' },  // Ensure alias matches `Order.belongsTo(Food, { as: 'Food' })`
+                { model: Restaurant, as: 'Restaurant' }  // Ensure alias matches
+            ],
+            raw: true,
+            nest: true
+        });
+
+        console.log("Orders fetched for StudentId:", StudentId);
+        console.log("Debug orders:", orders);  // Debugging output
+
+        res.render('student-orders', { orders });
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        res.status(500).send("Internal Server Error: " + error.message);
+    }
+});
+
+// GET Route: Display Available Food Items for Ordering
+app.get('/order', async (req, res) => {
+    if (!req.session.student) {
+        return res.redirect('/login');  // Redirect if not logged in
+    }
+
+    try {
+        const foodItems = await Food.findAll({
+            attributes: ['foodId', 'foodName', 'discountedPrice'], // Fetch only required fields
+            raw: true
+        });
+
+        res.render('placeorder', { foodItems, isStudent: true });
+    } catch (error) {
+        console.error("Error fetching food items:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// POST Route: Place an Order
+app.post('/order', async (req, res) => {
+    if (!req.session.student) return res.redirect('/login');
+
+    const foodId = Number(req.body.foodId);
+    const StudentId = Number(req.session.student.StudentId);
+    const quantity = 1;  // Default quantity since no input field is provided
+
+    if (!foodId || isNaN(foodId)) {
+        return res.status(400).send("Invalid food selection.");
+    }
+
+    try {
+        const foodItem = await Food.findOne({
+            where: { foodId },
+            include: [{ model: Restaurant }],
+            raw: true,
+            nest: true
+        });
+
+        if (!foodItem) {
+            return res.status(404).send("Food item not found.");
+        }
+
+        const restaurantId = foodItem.Restaurant?.restaurantId;
+        if (!restaurantId) {
+            return res.status(500).send("Restaurant association missing.");
+        }
+
+        const totalPrice = foodItem.discountedPrice * quantity;
+
+        await Order.create({
+            foodId,
+            StudentId,
+            restaurantId,
+            orderDetails: `Ordered ${quantity}x ${foodItem.foodName}`,
+            orderStatus: 'pending',
+            totalPrice
+        });
+
+        console.log("Order placed successfully!");
+        res.redirect('/myorders');  // Redirect to order history
+
+    } catch (error) {
+        console.error("Error placing order:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
+
+app.post('/myorders', async (req, res) => {
+    if (!req.session.student) return res.redirect('/login');
+
+    // Ensure `foodId` and `quantity` are numbers
+    const foodId = Number(req.body.foodId);
+    const quantity = Number(req.body.quantity);
+    const StudentId = Number(req.session.student.StudentId);
+
+    if (!foodId || isNaN(foodId) || !quantity || quantity <= 0) {
+        console.error("Invalid order data:", req.body);
+        return res.status(400).send('Invalid food item or quantity.');
+    }
+
+    try {
+        const foodItem = await Food.findOne({
+            where: { foodId: foodId },
+            include: [{ model: Restaurant }],
+            raw: true,
+            nest: true
+        });
+
+        if (!foodItem) {
+            console.error("Food item not found:", foodId);
+            return res.status(404).send('Food item not found.');
+        }
+
+        const restaurantId = foodItem.Restaurant?.restaurantId;
+        if (!restaurantId) {
+            console.error("Missing restaurant association for foodId:", foodId);
+            return res.status(500).send("Restaurant association missing.");
+        }
+
+        const totalPrice = foodItem.discountedPrice * quantity;
+
+        console.log("Placing order:", { foodId, StudentId, restaurantId, totalPrice });
+
+        await Order.create({
+            foodId,
+            StudentId,
+            restaurantId,
+            orderDetails: `Ordered ${quantity}x ${foodItem.foodName}`,
+            orderStatus: 'pending',
+            totalPrice
+        });
+
+        console.log("Order placed successfully!");
+        res.redirect('/myorders'); // Redirect to view orders
+    } catch (error) {
+        console.error("Error placing order:", error);
+        res.status(500).send("Internal Server Error: " + error.message);
+    }
+});
+
+
+// Place Order Route
 app.post('/student/orders', async (req, res) => {
     try {
-        if (!req.session.student) {
-            return res.redirect('/login'); // Ensure only logged-in students can place orders
-        }
+        if (!req.session.student) return res.redirect('/login'); 
 
         const { foodId, quantity } = req.body;
         const StudentId = req.session.student.StudentId;
@@ -417,18 +574,13 @@ app.post('/student/orders', async (req, res) => {
             include: [{ model: Restaurant }]
         });
 
-        console.log("Fetched Food Item:", foodItem); // DEBUGGING: Log output
-
         if (!foodItem) {
             return res.status(404).send('Food item not found');
         }
 
-        // Check if Restaurant association exists
-        console.log("FoodItem.Restaurant:", foodItem.Restaurant);
-
-        const restaurantId = foodItem.Restaurant?.restaurantId;
+        const restaurantId = foodItem.Restaurant ? foodItem.Restaurant.restaurantId : null;
         if (!restaurantId) {
-            return res.status(500).send("Restaurant association missing for food item.");
+            return res.status(500).send("Error: Food item is not linked to a restaurant.");
         }
 
         const totalPrice = foodItem.discountedPrice * quantity;
@@ -452,47 +604,45 @@ app.post('/student/orders', async (req, res) => {
     }
 });
 
+
 // Route to handle viewing orders (GET)
 app.get('/student/orders', async (req, res) => {
-    if (!req.session.student) {
-        return res.redirect('/login'); // Ensure only logged-in students can view their orders
-    }
+    if (!req.session.student) return res.redirect('/login');
 
     const StudentId = req.session.student.StudentId;
 
     try {
-        // Fetch orders with related Food and Restaurant data
         const orders = await Order.findAll({
-            where: { StudentId: studentId },
+            where: { StudentId: StudentId },
             include: [
-                { model: Food, as: 'foodItem' },     // Include related Food
-                { model: Restaurant, as: 'restaurant' } // Include related Restaurant
+                { model: Food, as: 'foodItem' },
+                { model: Restaurant, as: 'restaurant' }
             ]
         });
 
-        // Render orders page with the fetched orders data
+        if (!orders || orders.length === 0) {
+            return res.render('student-orders', { message: "No orders found." });
+        }
+
         res.render('student-orders', { orders });
     } catch (error) {
         console.error('Error fetching orders:', error);
-        res.status(500).send('Error fetching orders');
+        res.status(500).render('student-orders', { message: 'Error fetching orders.' });
     }
 });
+
+
 // Route to track an order (GET instead of POST)
 app.get('/track-order/:orderId', async (req, res) => {
+    if (!req.session.student) return res.redirect('/login');
+
+    const { orderId } = req.params;
+
     try {
-        const { orderId } = req.params;
-        const StudentId = req.session.student?.StudentId;
+        const trackingInfo = await restaurantData.trackOrder(orderId);
+        if (!trackingInfo) return res.status(404).send('Tracking information not found.');
 
-        if (!StudentId) {
-            return res.redirect('/login');
-        }
-
-        const trackingInfo = await fetchOrderTracking(orderId, StudentId);
-        if (!trackingInfo) {
-            return res.status(404).send('Tracking information not found.');
-        }
-
-        res.json(trackingInfo);
+        res.render('track-order', { trackingInfo });
     } catch (error) {
         console.error('Error tracking order:', error);
         res.status(500).send('Internal Server Error');
