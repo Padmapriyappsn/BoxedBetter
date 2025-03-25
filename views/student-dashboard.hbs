@@ -34,7 +34,7 @@
                 <option value="#">Select an option</option>
                 <option value="/myorders">View Orders</option>
                 <option value="#order-section">Place Order</option> <!-- Fixed: Scrolls to ordering section -->
-                <option value="/track-order/{{student.StudentId}}">Track Order</option> <!-- Fixed: Passes student ID -->
+                <!--option value="/track-order/{{student.StudentId}}">Track Order</option> <!-- Fixed: Passes student ID -->
                 <option value="/restaurants">Review Restaurant</option>
             </select>
             <a href="/student/logout" class="custom-btn">Logout</a>
@@ -91,7 +91,7 @@
                 <thead>
                     <tr>
                         <th>Food Name</th>
-                        <th>Description</th>
+                        <th>Quantity</th>
                         <th>Discounted Price</th>
                         <th>Restaurant</th>
                         <th>Quantity</th>
@@ -102,13 +102,13 @@
                     {{#each foods}}
                         <tr>
                             <td>{{this.foodName}}</td>
-                            <td>{{this.description}}</td>
+                            <td>{{this.quantity}}</td>
                             <td>${{this.discountedPrice}}</td>
-                            <td>{{this.restaurantName}}</td>
+                            <td>{{this.Restaurant.restaurantName}}</td>
                             <td>
                                 <form action="/order" method="POST">
-                                    <input type="hidden" name="foodId" value="{{this.foodId}}"> <!-- Fixed: Use 'foodId' -->
-                                    <input type="number" name="quantity" min="1" value="1" required class="form-control" style="width: 60px;">
+                                    <input type="hidden" name="foodId" value="{{this.foodId}}">
+                                    <input type="number" name="quantity" min="1" max="{{this.quantity}}" value="1" required class="form-control" style="width: 60px;">
                             </td>
                             <td>
                                     <button type="submit" class="custom-btn">Order Now</button>

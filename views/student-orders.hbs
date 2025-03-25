@@ -15,7 +15,7 @@
                 <option value="#">Select an option</option>
                 <option value="/myorders">View Orders</option>
                 <option value="/student-dashboard">Place Order</option>
-                <option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}defaultId{{/if}}">Track Order</option>
+                <!--option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}foodId{{/if}}">Track Order</option-->
                 <option value="/restaurants">Review Restaurant</option>
             </select>
             <a href="/student/logout" class="custom-btn">Logout</a>
@@ -32,6 +32,7 @@
                         <th>Order ID</th>
                         <th>Restaurant</th>
                         <th>Food Item</th>
+                        <th>Quantity</th>
                         <th>Status</th>
                         <th>Total Price</th>
                     </tr>
@@ -40,8 +41,9 @@
                     {{#each orders}}
                         <tr>
                             <td>{{this.orderId}}</td>
-                            <td>{{#if this.restaurant.restaurantName}}{{this.restaurant.restaurantName}}{{else}}N/A{{/if}}</td>
-                            <td>{{#if this.foodItem.foodName}}{{this.foodItem.foodName}}{{else}}N/A{{/if}}</td> 
+                            <td>{{#if this.Restaurant.restaurantName}}{{this.Restaurant.restaurantName}}{{else}}N/A{{/if}}</td>
+                            <td>{{#if this.Food.foodName}}{{this.Food.foodName}}{{else}}N/A{{/if}}</td> 
+                            <td>{{this.quantity}}</td>
                             <td>{{this.orderStatus}}</td>
                             <td>${{this.totalPrice}}</td>
                         </tr>

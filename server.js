@@ -143,6 +143,52 @@ app.get("/student/:StudentId", (req, res) => {
         }); 
 });
 
+// View orders placed by students in this restaurant
+// Route to fetch orders with optional filtering (e.g., by student name or order ID)
+app.get('/restaurant/orders', async (req, res) => {
+    if (!req.session.restaurant) {
+        return res.redirect('/login');  // Redirect to login if not logged in
+    }
+
+    const restaurantId = req.session.restaurant.restaurantId;
+    const { orderId, studentName } = req.query;  // Use query params for filtering
+
+    try {
+        const queryConditions = { restaurantId };
+
+        if (orderId) {
+            queryConditions.orderId = orderId;
+        }
+
+        if (studentName) {
+            queryConditions.studentName = studentName;
+        }
+
+        // Fetch orders with associated Food data (including foodName and quantity)
+        const orders = await Order.findAll({
+            where: queryConditions,
+            include: [{
+                model: Food,
+                as: 'Food',
+                attributes: ['foodName', 'quantity']
+            }],
+            raw: true,  // Ensure raw data is returned (plain objects)
+            nest: true   // Allows nested structure for the included models
+        });
+
+        if (!orders || orders.length === 0) {
+            res.render('restaurant-orders', { orders: orders });
+            //return res.status(404).send('No orders found.');
+        }
+
+        res.render('restaurant-orders', { orders: orders });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
 // GET /restaurant/:id route
 app.get("/restaurant/:id", (req, res) => {
     restaurantData.getRestaurantById(parseInt(req.params.id))
@@ -336,21 +382,47 @@ app.post('/restaurant-dashboard', (req, res) => {
             res.status(500).send('Error adding food item: ' + err.message); // or render the error
         });
 });
-//view orders placed by student in this restraunt
-app.get('/restaurant/orders', async (req, res) => {
+
+
+// Route to fetch orders placed by students for a restaurant (via POST)
+/* app.post('/restaurant/orders', async (req, res) => {
     if (!req.session.restaurant) {
-        return res.redirect('/login');
+        return res.redirect('/login');  // Redirect to login page if not logged in
     }
+
     const restaurantId = req.session.restaurant.restaurantId;
+    const { orderId, studentName } = req.body;  // Assuming you're submitting an order ID or student name in the form
+
     try {
-        // Assuming you have a function or model to fetch orders
-        const orders = await getOrdersByRestaurantId(restaurantId);
-        res.render('restaurant-orders', { orders: orders });
+        // Build query conditions dynamically based on provided data
+        const queryConditions = {
+            restaurantId: restaurantId
+        };
+
+        if (orderId) {
+            queryConditions.orderId = orderId;
+        }
+
+        if (studentName) {
+            queryConditions.studentName = studentName;  // Assuming you want to filter by student name
+        }
+
+        // Fetch orders based on query conditions
+        const orders = await Order.findAll({
+            where: queryConditions
+        });
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).send('No orders found');
+        }
+
+        res.render('restaurant-orders', { orders: orders });  // Render the orders page with the data
     } catch (error) {
         console.error('Error fetching orders:', error);
         res.status(500).send('Internal Server Error');
     }
 });
+*/
 
 // route to delete food item in restraunt
 app.post('/restaurant/delete-food/:foodId', async (req, res) => {
@@ -489,6 +561,7 @@ app.post('/order', async (req, res) => {
             restaurantId,
             orderDetails: `Ordered ${quantity}x ${foodItem.foodName}`,
             orderStatus: 'pending',
+            quantity,
             totalPrice
         });
 
@@ -508,7 +581,7 @@ app.post('/myorders', async (req, res) => {
 
     // Ensure `foodId` and `quantity` are numbers
     const foodId = Number(req.body.foodId);
-    const quantity = Number(req.body.quantity);
+    const quantity = Number(req.body.Order.quantity);
     const StudentId = Number(req.session.student.StudentId);
 
     if (!foodId || isNaN(foodId) || !quantity || quantity <= 0) {
@@ -631,23 +704,58 @@ app.get('/student/orders', async (req, res) => {
     }
 });
 
-
-// Route to track an order (GET instead of POST)
+// Route to track an order (GET request, using orderId from URL parameters)
 app.get('/track-order/:orderId', async (req, res) => {
     if (!req.session.student) return res.redirect('/login');
 
-    const { orderId } = req.params;
+    const { orderId } = req.params;  // Extract orderId from the URL
 
     try {
-        const trackingInfo = await restaurantData.trackOrder(orderId);
-        if (!trackingInfo) return res.status(404).send('Tracking information not found.');
+        // Query the Order model by orderId using the 'where' condition
+        const order = await Order.findOne({
+            where: { orderId: orderId },  // Filter by orderId
+        });
 
-        res.render('track-order', { trackingInfo });
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+        // Render the 'track-order' view with the order details
+        res.render('track-order', { order });
     } catch (error) {
         console.error('Error tracking order:', error);
         res.status(500).send('Internal Server Error');
     }
 });
+
+// Route to handle order tracking via POST (orderId sent in request body)
+app.post('/track-order', async (req, res) => {
+    if (!req.session.student) return res.redirect('/login');
+
+    const { orderId } = req.body;  // Ensure orderId is sent in the body of the POST request
+
+    if (!orderId) {
+        return res.status(400).send('Order ID is required.');
+    }
+
+    try {
+        // Query the Order model by orderId using the 'where' condition
+        const order = await Order.findOne({
+            where: { orderId: orderId },  // Filter by orderId
+        });
+
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+        // Render the 'track-order' view with the order details
+        res.render('track-order', { order });
+    } catch (error) {
+        console.error('Error tracking order:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 
 // Route to render the restaurants page to leave a review
 app.get("/restaurants", async (req, res) => {
@@ -806,8 +914,8 @@ app.post("/student/update", (req, res) => {
         });
 });
 
-// POST /restraunts/update route
-app.post("/restraunts/update", (req, res) => {
+/* // POST /restraunts/update route
+app.post("/restaurants/update", (req, res) => {
     restaurantData.updateRestaurant(req.body)
         .then(() => {
             res.redirect('/restaurants');
@@ -816,6 +924,7 @@ app.post("/restraunts/update", (req, res) => {
             res.status(500).send("Unable to update Restaurant");
         });
 });
+*/
 
 // GET /register route
 app.get("/register", (req, res) => {

@@ -31,13 +31,14 @@
         <h2 style="color: white;">Restaurant Dashboard</h1>
         <nav>
             <label for="nav-dropdown">Menu</label>
-            <select id="nav-dropdown" onchange="window.location.href=this.value;">
+            <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
                 <option value="#">Select an option</option>
                 <option value="/restaurant/orders">View Orders</option>
                 <option value="/restaurant-dashboard">Restaurant Dashboard</option>
                 <option value="/post-new-item">Post New Item</option>
             </select>
-            <a href="/restaurant/logout" style="color: black; text-decoration: none">Logout</a>
+            <a href="/restaurant/logout" class="custom-btn">Logout</a>
+            
         </nav>
     </header>
     
@@ -49,7 +50,7 @@
                 <thead>
                     <tr>
                         <th>Food Name</th>
-                        <th>Description</th>
+                        <th>Quantity</th>
                         <th>Discounted Price</th>
                         <th>Actions</th>
                     </tr>
@@ -58,7 +59,7 @@
                     {{#each foods}}
                         <tr>
                             <td>{{this.foodName}}</td>
-                            <td>{{this.Quantity}}</td>
+                            <td>{{this.quantity}}</td>
                             <td>${{this.discountedPrice}}</td>
                             <td>
                                 <form action="/restaurant/delete-food/{{this.foodId}}" method="POST">

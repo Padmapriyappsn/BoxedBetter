@@ -14,21 +14,7 @@
             flex-direction: column;
             min-height: 100vh;
         }
-        nav {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        nav label {
-            margin-right: 10px;
-        }
-
-        nav select, nav a {
-            margin-right: 10px;
-            padding: 5px 10px;
-        }
-
+       
         section {
             padding: 20px;
             flex-grow: 1;
@@ -61,18 +47,23 @@
     </style>
 </head>
 <body>
+    
     <header>
-        <h1 style="color: white;">Post New Food Item</h1>
+         <h2 style="color: white;">Post New Item</h2>
         <nav>
-            <select id="nav-dropdown" onchange="window.location.href=this.value;">
-                <label for="nav-dropdown">Menu</label>
+            <label for="nav-dropdown">Menu</label>
+            <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
                 <option value="#">Select an option</option>
                 <option value="/restaurant/orders">View Orders</option>
+                <option value="/restaurant-dashboard">Restaurant Dashboard</option>
                 <option value="/post-new-item">Post New Item</option>
             </select>
-            <a href="/restaurant/logout" style="color: black; text-decoration: none">Logout</a>
+            <a href="/restaurant/logout" class="custom-btn">Logout</a>
+            
         </nav>
     </header>
+
+
     <section>
         {{#if message}}
             <p class="{{#if error}}error-message{{else}}success-message{{/if}}">{{message}}</p>
@@ -94,8 +85,6 @@
 
             <button type="submit">Post Food Item</button>
         </form>
-
-        <a href="/restaurant-dashboard">Back to Dashboard</a>
     </section>
 </body>
 </html>

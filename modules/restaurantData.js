@@ -89,6 +89,7 @@ var Order = sequelize.define('Order', {
         autoIncrement: true
     },
     orderDetails: Sequelize.STRING, // Store details like food items, quantities, etc.
+    quantity: Sequelize.INTEGER, // food quantity
     orderStatus: Sequelize.STRING, // "pending", "in progress", "completed"
     totalPrice: {
         type: Sequelize.FLOAT,
@@ -638,3 +639,4 @@ module.exports = {
     Review,
     getAvailableFoodItems
 };
+

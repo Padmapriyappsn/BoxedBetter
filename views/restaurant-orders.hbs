@@ -8,34 +8,44 @@
 </head>
 <body>
     <header>
-        <h1>Restaurant Dashboard</h1>
+         <h2 style="color: white;">Restaurant Orders</h2>
         <nav>
             <label for="nav-dropdown">Menu</label>
-            <select id="nav-dropdown" onchange="window.location.href=this.value;">
+            <select id="nav-dropdown" onchange="window.location.href=this.value;" class="custom-btn">
                 <option value="#">Select an option</option>
                 <option value="/restaurant/orders">View Orders</option>
+                <option value="/restaurant-dashboard">Restaurant Dashboard</option>
                 <option value="/post-new-item">Post New Item</option>
             </select>
-            <a href="/restaurant/logout" style="color: black; text-decoration: none">Logout</a>
+            <a href="/restaurant/logout" class="custom-btn">Logout</a>
+            
         </nav>
     </header>
-    <h1>Restaurant Orders</h1>
 
     {{#if orders.length}}
-        <ul>
-            {{#each orders}}
-                <li>
-                    <strong>Order ID:</strong> {{this.orderId}}<br>
-                    <strong>Food Name:</strong> {{this.foodName}}<br>
-                    <strong>Quantity:</strong> {{this.quantity}}<br>
-                    <strong>Total Price:</strong> ${{this.totalPrice}}<br>
-                    </li>
-            {{/each}}
-        </ul>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Food Name</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each orders}}
+                    <tr>
+                        <td>{{this.orderId}}</td>
+                        <td>{{this.Food.foodName}}</td>
+                        <td>{{this.quantity}}</td>
+                        <td>${{this.totalPrice}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
     {{else}}
-        <p>No orders found.</p>
+        <h4 style="height: 4em;">No orders found</h4>
     {{/if}}
 
-    <a href="/restaurant-dashboard">Back to Dashboard</a>
 </body>
 </html>

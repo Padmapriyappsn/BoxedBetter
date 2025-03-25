@@ -6,7 +6,7 @@
             <option value="#">Select an option</option>
             <option value="/myorders">View Orders</option>
             <option value="/student-dashboard">Place Order</option>
-            <option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}defaultId{{/if}}">Track Order</option>
+            <!--option value="/track-order/{{#if student}}{{student.StudentId}}{{else}}OrderId{{/if}}">Track Order</option-->
             <option value="/restaurants">Review Restaurant</option>
         </select>
         <a href="/student/logout" class="custom-btn">Logout</a>
@@ -22,11 +22,9 @@
                 <th>Status</th>
             </tr>
         </thead>
-        {{#each orders}}
         <tr>
-            <td>{{this.id}}</td>
-            <td>{{this.status}}</td>
+            <td>{{order.orderId}}</td>
+            <td>{{order.orderStatus}}</td>
         </tr>
-        {{/each}}
     </table>
 </section>
